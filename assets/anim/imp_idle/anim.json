@@ -15,5 +15,9 @@
  "sheets": [
   "sheet0.webp"
  ],
- "charH": 212
+ "charH": 212,
+ "halfSheets": [
+  "sheet0_half.webp"
+ ],
+ "halfScale": 0.5
 }

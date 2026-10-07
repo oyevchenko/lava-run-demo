@@ -12,7 +12,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_idle.png",
+   "src": "img/hero_idle.webp",
    "lantern": [
     393,
     369
@@ -38,7 +38,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_jump.png",
+   "src": "img/hero_jump.webp",
    "lantern": [
     39,
     416
@@ -53,7 +53,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_win.png",
+   "src": "img/hero_win.webp",
    "lantern": [
     93,
     208
@@ -68,7 +68,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_idol.png",
+   "src": "img/hero_idol.webp",
    "lantern": [
     140,
     459
@@ -94,7 +94,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_fall.png",
+   "src": "img/hero_fall.webp",
    "lantern": [
     382,
     239
@@ -109,7 +109,7 @@
     0.95
    ],
    "group": "Hero",
-   "src": "img/hero_soot.png"
+   "src": "img/hero_soot.webp"
   },
   "hero_wave": {
    "w": 512,
@@ -188,7 +188,7 @@
     0.5
    ],
    "group": "Rewards",
-   "src": "img/idol.png"
+   "src": "img/idol.webp"
   },
   "coin": {
    "w": 96,
@@ -199,7 +199,7 @@
     0.5
    ],
    "group": "Rewards",
-   "src": "img/coin.png"
+   "src": "img/coin.webp"
   },
   "column": {
    "w": 260,
@@ -210,7 +210,7 @@
     0.95
    ],
    "group": "Environment",
-   "src": "img/column.png",
+   "src": "img/column.webp",
    "top": 20
   },
   "column_broken": {
@@ -222,7 +222,7 @@
     0.95
    ],
    "group": "Environment",
-   "src": "img/column_broken.png",
+   "src": "img/column_broken.webp",
    "top": 41
   },
   "brazier": {
@@ -234,7 +234,7 @@
     0.96
    ],
    "group": "Environment",
-   "src": "img/brazier.png",
+   "src": "img/brazier.webp",
    "flame": [
     100,
     77
@@ -249,7 +249,7 @@
     0.93
    ],
    "group": "Characters",
-   "src": "img/imp.png"
+   "src": "img/imp.webp"
   },
   "imp_cheer": {
    "w": 192,
@@ -260,7 +260,7 @@
     0.93
    ],
    "group": "Characters",
-   "src": "img/imp_cheer.png"
+   "src": "img/imp_cheer.webp"
   },
   "imp_giggle": {
    "w": 192,
@@ -271,7 +271,7 @@
     0.93
    ],
    "group": "Characters",
-   "src": "img/imp_giggle.png"
+   "src": "img/imp_giggle.webp"
   },
   "gate_arch": {
    "w": 640,
@@ -404,7 +404,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.56,
-   "src": "img/bg_circle_1.jpg"
+   "src": "img/bg_circle_1.webp"
   },
   "bg_circle_2": {
    "w": 1920,
@@ -416,7 +416,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.58,
-   "src": "img/bg_circle_2.jpg"
+   "src": "img/bg_circle_2.webp"
   },
   "bg_circle_3": {
    "w": 1920,
@@ -428,7 +428,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.46,
-   "src": "img/bg_circle_3.jpg"
+   "src": "img/bg_circle_3.webp"
   },
   "bg_circle_4": {
    "w": 1920,
@@ -440,7 +440,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.6,
-   "src": "img/bg_circle_4.jpg"
+   "src": "img/bg_circle_4.webp"
   },
   "bg_circle_5": {
    "w": 1920,
@@ -452,7 +452,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.46,
-   "src": "img/bg_circle_5.jpg"
+   "src": "img/bg_circle_5.webp"
   },
   "bg_circle_6": {
    "w": 1920,
@@ -464,7 +464,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.52,
-   "src": "img/bg_circle_6.jpg"
+   "src": "img/bg_circle_6.webp"
   },
   "bg_circle_7": {
    "w": 1920,
@@ -476,7 +476,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.55,
-   "src": "img/bg_circle_7.jpg"
+   "src": "img/bg_circle_7.webp"
   },
   "bg_circle_8": {
    "w": 1920,
@@ -488,7 +488,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.58,
-   "src": "img/bg_circle_8.jpg"
+   "src": "img/bg_circle_8.webp"
   },
   "bg_circle_9": {
    "w": 1920,
@@ -500,7 +500,7 @@
    ],
    "group": "Backgrounds",
    "horizon": 0.58,
-   "src": "img/bg_circle_9.jpg"
+   "src": "img/bg_circle_9.webp"
   },
   "hazard_c1": {
    "w": 512,
@@ -622,7 +622,7 @@
    ],
    "group": "UI",
    "slice": 64,
-   "src": "img/ui_panel_crimson.png"
+   "src": "img/ui_panel_crimson.webp"
   },
   "ui_plaque": {
    "w": 720,
@@ -646,7 +646,7 @@
    ],
    "group": "UI",
    "slice": 56,
-   "src": "img/ui_btn_green.png"
+   "src": "img/ui_btn_green.webp"
   },
   "ui_btn_gold": {
    "w": 384,
@@ -658,7 +658,7 @@
    ],
    "group": "UI",
    "slice": 56,
-   "src": "img/ui_btn_gold.png"
+   "src": "img/ui_btn_gold.webp"
   },
   "ui_medallion": {
    "w": 160,
@@ -669,7 +669,7 @@
     0.5
    ],
    "group": "UI",
-   "src": "img/ui_medallion.png"
+   "src": "img/ui_medallion.webp"
   },
   "ui_icon_btn": {
    "w": 112,
@@ -680,7 +680,7 @@
     0.5
    ],
    "group": "UI",
-   "src": "img/ui_icon_btn.png"
+   "src": "img/ui_icon_btn.webp"
   },
   "ui_meander_strip": {
    "w": 256,
@@ -702,7 +702,7 @@
     0.5
    ],
    "group": "UI",
-   "src": "img/logo.png"
+   "src": "img/logo.webp"
   }
  },
  "audio": {

@@ -276,10 +276,28 @@ svg{width:100%;height:100%;display:block}
 .splash-glow{position:absolute;left:50%;top:42%;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;background:radial-gradient(rgba(255,190,80,.45),rgba(255,120,40,0) 65%)}
 .splash-logo{position:relative;width:min(78vw,420px);height:auto;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55));animation:splashIn .6s cubic-bezier(.2,1.5,.4,1) both}
 .splash-bar{position:relative;width:160px;height:10px;border-radius:6px;background:#3a0810;box-shadow:inset 0 2px 3px rgba(0,0,0,.6),0 0 0 2px #e9b23e}
-.splash-bar i{position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:6px;background:linear-gradient(#fff07a,#f3a312);animation:splashBar 1s ease-in-out infinite alternate}
+.splash-bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:linear-gradient(#fff07a,#f3a312);transition:width .2s linear}
 .splash p{position:relative;font:13px 'Rubik',sans-serif;color:#ffd9a8;opacity:.85;margin:0}
 @keyframes splashIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 @keyframes splashBar{from{left:0}to{left:60%}}
+
+/* narrow phones: the painted logo is 116px and was covering the refill button on 360px */
+@media (max-width: 400px) {
+  .topbar{gap:4px;padding-left:4px;padding-right:4px}
+  .logo,.has-logo .logo{width:62px;height:40px;margin:0;flex:0 0 62px}
+  .balance{max-width:none;flex:1 1 auto;height:40px;min-width:0}
+  #balance{font-size:15px;margin:0 4px}
+  .plus{width:40px;height:40px;flex:0 0 40px;border-radius:12px}
+  .top-actions{gap:3px;margin-left:2px}
+  .ib,.has-ui-icon-btn .ib{width:40px;height:40px;flex:0 0 40px;padding:9px}
+}
+/* landscape phones don't fit the cabinet; ask to rotate instead of clipping GO */
+@media (orientation: landscape) and (max-height: 500px) {
+  .turn{display:flex}
+}
+.turn{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;padding:24px;text-align:center;
+  background:radial-gradient(ellipse at 50% 40%,#b3243c 0%,#4a0c16 70%);color:#ffe9a8;font:700 22px/1.35 'Lilita One',sans-serif}
+.turn p{margin:0;max-width:280px;text-shadow:0 2px 0 #3a0c08}
 
 /* ---------- painted UI kit (design/inferno/src/ui_kit_sheet.jpg + logo.jpg -> assets/img/ui_*.png, logo.png) ---------- */
 .has-logo .logo{width:116px;height:50px;margin:0 -4px 0 -6px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}

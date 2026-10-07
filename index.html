@@ -4,12 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#7e1427">
+<meta name="description" content="Lava Run: Inferno is a free step-and-cashout demo. Virtual coins only, no real money. Nine circles, four difficulties, 96% RTP.">
+<meta property="og:title" content="Lava Run: Inferno — demo">
+<meta property="og:description" content="Step across marble slabs over the lava. Cash out, or go deeper. Free demo, virtual coins only.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://oyevchenko.github.io/lava-run-demo/assets/img/og.webp">
+<meta name="twitter:card" content="summary_large_image">
 <title>Lava Run: Inferno - Demo (virtual coins)</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23c22a43' stroke='%23ffd23c' stroke-width='5'/%3E%3Cpath d='M32 12 Q44 28 38 40 Q36 30 32 30 Q28 30 26 40 Q20 28 32 12Z' fill='%23ffd23c'/%3E%3Crect x='18' y='44' width='28' height='6' rx='2' fill='%23ffd23c'/%3E%3C/svg%3E">
+<link rel="icon" href="assets/img/favicon.webp">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.png" alt=""><div class="splash-bar"><i></i></div><p>Demo &middot; virtual coins only, no real money</p></div>
+<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610071829" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18.5a3 3 0 1 1-2-2.83V5.5l11-2.5v12.5a3 3 0 1 1-2-2.83V7.3L9 8.9z" fill="currentColor"/></symbol>
@@ -109,7 +115,7 @@
     </div>
     <h3>How to play</h3>
     <ol class="rules">
-      <li>Pick a bet and a difficulty, press <b>GO</b>. The young poet leaps onto the first marble slab of the descent.</li>
+      <li>Pick a bet and a difficulty, press <b>GO</b>. The poet leaps onto the first marble slab of the descent.</li>
       <li>Each slab may crumble into the lava &mdash; then the round is lost.</li>
       <li>Every safe slab raises the multiplier. Press <b>CASH OUT</b> any time after the first step.</li>
       <li>A <b>Golden Idol</b> can appear on a safe slab: it <b>doubles</b> your running multiplier (all upcoming slabs too).</li>
@@ -123,18 +129,21 @@
   </div>
 </div>
 
-<script src="data/lava-run-tables.js"></script>
-<script src="assets/manifest.js"></script>
-<script src="js/rng.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/circles.js"></script>
-<script src="js/art/core.js"></script>
-<script src="js/art/props.js"></script>
-<script src="js/art/hero.js"></script>
-<script src="js/assets.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/lava-gl.js"></script>
-<script src="js/render.js"></script>
-<script src="js/app.js"></script>
+<div id="turn" class="turn" role="dialog" aria-label="Rotate your phone"><p>Turn your phone upright</p></div>
+
+<script src="js/build.js?v=202610071829"></script>
+<script src="data/lava-run-tables.js?v=202610071829"></script>
+<script src="assets/manifest.js?v=202610071829"></script>
+<script src="js/rng.js?v=202610071829"></script>
+<script src="js/engine.js?v=202610071829"></script>
+<script src="js/circles.js?v=202610071829"></script>
+<script src="js/art/core.js?v=202610071829"></script>
+<script src="js/art/props.js?v=202610071829"></script>
+<script src="js/art/hero.js?v=202610071829"></script>
+<script src="js/assets.js?v=202610071829"></script>
+<script src="js/audio.js?v=202610071829"></script>
+<script src="js/lava-gl.js?v=202610071829"></script>
+<script src="js/render.js?v=202610071829"></script>
+<script src="js/app.js?v=202610071829"></script>
 </body>
 </html>

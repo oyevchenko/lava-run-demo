@@ -78,8 +78,16 @@
       qb.textContent = 'QA MODE' + (qa.mode === 'idols' ? ' \u00b7 ALL IDOLS' : qa.mode === 'nolose' ? ' \u00b7 NO LOSE' : '') + (qa.lose ? ' \u00b7 LOSE @' + qa.lose : ''); ($('stage') || document.body).appendChild(qb); }
     var assets = LavaAssets(window.LAVA_ASSET_MANIFEST, {});
     var audio = LavaAudio(assets);
-    // splash with the painted logo until the bitmaps are in (purely visual, never blocks input)
-    (function () { var sp = $('splash'); if (!sp) return; var t0 = Date.now(); assets.ready.then(function () { setTimeout(function () { sp.classList.add('gone'); setTimeout(function () { sp.remove(); }, 600); }, Math.max(0, 650 - (Date.now() - t0))); }); })();
+    // splash stays up until the gate art and the standing hero are in; the bar tracks that, not a fake loop
+    (function () {
+      var sp = $('splash'); if (!sp) return;
+      var fill = $('splashFill'), t0 = Date.now();
+      if (assets.onProgress) assets.onProgress(function (done, total) { if (fill) fill.style.width = Math.round(100 * done / Math.max(1, total)) + '%'; });
+      assets.ready.then(function () {
+        if (fill) fill.style.width = '100%';
+        setTimeout(function () { sp.classList.add('gone'); setTimeout(function () { sp.remove(); }, 600); }, Math.max(0, 400 - (Date.now() - t0)));
+      });
+    })();
     var streakLv = 0;
     var scene = LavaScene($('scene'), $('fx'), assets, { quality: qParam,
       onFirework: function () { audio.firework(); },
@@ -466,14 +474,18 @@
     assets.ready.then(function () { var c = frameC; frameC = -1; setFrameBg(c < 0 ? circleNow() : c); });
     var frameC = -1, frameFlip = false;
     function setFrameBg(c) {
-      if (c === frameC) return;
-      var m = assets.manifest && assets.manifest.images, name = 'bg_circle_' + Math.max(1, c), src = m && m[name] && m[name].src;
-      if (!src || assets.isFallback(name)) return;
-      frameC = c;
-      var url = new URL((assets.manifest.basePath || 'assets/') + src, location.href).href;
-      var a = $('frameBgA'), b = $('frameBgB'); if (!a || !b) return;
-      var on = frameFlip ? a : b, off = frameFlip ? b : a; frameFlip = !frameFlip;
-      on.style.backgroundImage = 'url("' + url + '")'; on.classList.add('on'); off.classList.remove('on');
+      var name = 'bg_circle_' + Math.max(1, c);
+      var apply = function () {
+        if (c === frameC) return;
+        var m = assets.manifest && assets.manifest.images, src = m && m[name] && m[name].src;
+        if (!src || assets.isFallback(name)) return;
+        frameC = c;
+        var url = new URL(assets.assetUrl ? assets.assetUrl(src) : (assets.manifest.basePath || 'assets/') + src, location.href).href;
+        var a = $('frameBgA'), b = $('frameBgB'); if (!a || !b) return;
+        var on = frameFlip ? a : b, off = frameFlip ? b : a; frameFlip = !frameFlip;
+        on.style.backgroundImage = 'url("' + url + '")'; on.classList.add('on'); off.classList.remove('on');
+      };
+      if (assets.ensure) assets.ensure(name).then(apply); else apply();
     }
 
     // ---------- boot ----------

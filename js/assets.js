@@ -9,19 +9,41 @@
     var M = manifest || { images: {}, audio: {}, basePath: 'assets/' };
     var base = M.basePath || 'assets/', imgs = {}, cache = {}, A = root.LavaArt, U = A.util;
     var loaded = 0, failed = [], rev = 0, bgCache = {};
+    var BUILD = root.LAVA_BUILD || '';
+    function bust(src) { return BUILD ? src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=' + BUILD : src; }
     // code-drawn fallbacks are rasterised above spec size on high-dpi / desktop screens so they stay crisp
     var HI = Math.max(1, Math.min(2, (root.devicePixelRatio || 1) * ((root.innerWidth || 0) >= 900 ? 1.4 : 1)));
 
     function loadImage(name, src) {
       return new Promise(function (res) {
         var im = new Image(); im.decoding = 'async';
-        im.onload = function () { imgs[name] = im; loaded++; invalidate(name); res(); };
-        im.onerror = function () { failed.push(name); console.warn('asset missing, using fallback:', name); res(); };
-        im.src = base + src;
+        im.onload = function () { imgs[name] = im; loaded++; invalidate(name); bump(name); res(); };
+        im.onerror = function () { failed.push(name); bump(name); console.warn('asset missing, using fallback:', name); res(); };
+        im.src = bust(base + src);
       });
     }
-    var jobs = Object.keys(M.images || {}).filter(function (n) { return M.images[n].src; }).map(function (n) { return loadImage(n, M.images[n].src); });
-    var ready = Promise.race([Promise.all(jobs), new Promise(function (r) { setTimeout(r, 8000); })]).then(applyUiCss);
+    // boot only needs the gate painting, the standing hero and the HUD kit. Circle 2-9 backdrops and the
+    // static pose sheets load after the splash, when the player can already step.
+    var CRITICAL = { logo: 1, bg_circle_1: 1, hero_idle: 1, slab_marble: 1, slab_cracked: 1, ui_panel_crimson: 1, ui_btn_green: 1, ui_btn_gold: 1, ui_medallion: 1, ui_icon_btn: 1, coin: 1 };
+    var progressFns = [], critDone = 0, critTotal = 0;
+    function emitProgress() { progressFns.forEach(function (fn) { try { fn(critDone, critTotal); } catch (e) {} }); }
+    function bump(name) { if (CRITICAL[name]) { critDone++; emitProgress(); } }
+    function onProgress(fn) { progressFns.push(fn); emitProgress(); }
+    var allJobs = Object.keys(M.images || {}).filter(function (n) { return M.images[n].src; });
+    var critJobs = allJobs.filter(function (n) { return CRITICAL[n]; }).map(function (n) { return loadImage(n, M.images[n].src); });
+    critTotal = critJobs.length + 1; // + hero_idle atlas, counted in loadAnim
+    emitProgress();
+    function ensure(name) {
+      if (imgs[name] || !M.images[name] || !M.images[name].src) return Promise.resolve(!!imgs[name]);
+      return loadImage(name, M.images[name].src).then(function () { return !!imgs[name]; });
+    }
+    var ready = Promise.race([
+      Promise.all(critJobs).then(function () { return whenAnim('hero_idle'); }),
+      new Promise(function (r) { setTimeout(r, 8000); })
+    ]).then(function () {
+      applyUiCss();
+      allJobs.filter(function (n) { return !CRITICAL[n] && !imgs[n]; }).forEach(function (n) { loadImage(n, M.images[n].src); });
+    });
 
     // a bitmap arrived after its fallback was already used: drop derived caches so the renderer picks it up
     function invalidate(name) {
@@ -89,7 +111,7 @@
     function applyUiCss() {
       var de = document.documentElement;
       ['ui_panel_crimson', 'ui_plaque', 'ui_btn_green', 'ui_btn_gold', 'ui_medallion', 'ui_icon_btn', 'ui_meander_strip', 'logo', 'coin'].forEach(function (n) {
-        if (imgs[n]) { de.style.setProperty('--img-' + n.replace(/_/g, '-'), 'url("' + new URL(base + M.images[n].src, location.href).href + '")'); de.classList.add('has-' + n.replace(/_/g, '-')); }
+        if (imgs[n]) { de.style.setProperty('--img-' + n.replace(/_/g, '-'), 'url("' + new URL(bust(base + M.images[n].src), location.href).href + '")'); de.classList.add('has-' + n.replace(/_/g, '-')); }
       });
     }
     // ---------- per-circle slab variants (derived from slab_marble / slab_cracked with composite ops only, so they
@@ -176,6 +198,11 @@
     var anims = {}, animMeta = {}, EAGER = ['hero_idle', 'imp_idle'];
     var PREFETCH = ['hero_jump', 'hero_wave', 'hero_fall', 'hero_soot', 'hero_win', 'imp_cheer', 'imp_giggle', 'hero_impatient', 'hero_nervous', 'hero_idol'];
     var STATIC_REF = { hero: 'hero_idle', imp: 'imp' }; // static sprite whose character size the anims must match
+    // phones decode half-size atlases (4x less RGBA). Desktop keeps the full sheets.
+    var LOW = false;
+    try {
+      LOW = (root.matchMedia && root.matchMedia('(max-width: 899px)').matches) || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+    } catch (e) {}
     function family(n) { return n.split('_')[0]; }
     function addAnim(name, a, dir) {
       if (!a || !a.frames || !a.sheets || !a.sheets.length || !a.frameW) return;
@@ -191,31 +218,64 @@
     function loadAnim(name) {
       var m = animMeta[name]; if (!m) return null;
       var st = anims[name]; if (st) return st;
-      st = anims[name] = { meta: m, sheets: new Array(m.sheets.length), n: 0, ready: false, failed: false };
+      st = anims[name] = { meta: m, sheets: new Array(m.sheets.length), n: 0, ready: false, failed: false, scale: LOW ? 0.5 : 1, used: Date.now() };
       m.sheets.forEach(function (src, i) {
         var im = new Image(); im.decoding = 'async';
-        im.onload = function () { st.sheets[i] = im; st.n++; if (st.n === m.sheets.length) { st.ready = true; rev++; } };
-        im.onerror = function () { if (!st.failed) console.warn('anim sheet missing, using static sprite:', name); st.failed = true; };
-        im.src = base + src;
+        var full = src, half = LOW ? src.replace(/sheet(\d+)\.webp$/, 'sheet$1_half.webp') : src;
+        function done() {
+          st.sheets[i] = im; st.n++;
+          if (name === 'hero_idle' && st.n === 1) { critDone = Math.min(critTotal, critDone + 1); emitProgress(); }
+          if (st.n === m.sheets.length) { st.ready = true; rev++; }
+        }
+        function fail() { if (!st.failed) console.warn('anim sheet missing, using static sprite:', name); st.failed = true; if (name === 'hero_idle') { critDone = Math.min(critTotal, critDone + 1); emitProgress(); } }
+        im.onload = done;
+        im.onerror = function () {
+          if (half !== full && im.src.indexOf('_half.webp') >= 0) { st.scale = 1; im.onerror = fail; im.src = bust(base + full); return; }
+          fail();
+        };
+        im.src = bust(base + (LOW ? half : full));
       });
       return st;
     }
+    function whenAnim(name) {
+      return new Promise(function (res) {
+        var st = loadAnim(name);
+        if (!st || st.ready || st.failed) return res();
+        var iv = setInterval(function () { if (st.ready || st.failed) { clearInterval(iv); res(); } }, 40);
+      });
+    }
     /** loaded anim state or null (kicks off the lazy load on first ask) */
-    function anim(name) { var st = anims[name] || loadAnim(name); return st && st.ready && !st.failed ? st : null; }
+    function anim(name) { var st = anims[name] || loadAnim(name); if (st) st.used = Date.now(); return st && st.ready && !st.failed ? st : null; }
     function hasAnim(name) { return !!animMeta[name]; }
-    /** frame i of an anim -> {img, sx, sy, sw, sh} (atlas source rect) */
+    /** frame i of an anim -> {img, sx, sy, sw, sh} (atlas source rect; halved when the phone sheet is in use) */
     function animCell(st, i) {
-      var m = st.meta, per = m.perSheet || m.cols * m.rows, s = Math.min(st.sheets.length - 1, Math.floor(i / per)), j = i - s * per;
-      return { img: st.sheets[s], sx: (j % m.cols) * m.frameW, sy: Math.floor(j / m.cols) * m.frameH, sw: m.frameW, sh: m.frameH };
+      var m = st.meta, sc = st.scale == null ? 1 : st.scale, per = m.perSheet || m.cols * m.rows, s = Math.min(st.sheets.length - 1, Math.floor(i / per)), j = i - s * per;
+      return { img: st.sheets[s], sx: (j % m.cols) * m.frameW * sc, sy: Math.floor(j / m.cols) * m.frameH * sc, sw: m.frameW * sc, sh: m.frameH * sc };
+    }
+    function releaseAnim(name) {
+      if (EAGER.indexOf(name) >= 0) return;
+      var st = anims[name]; if (!st) return;
+      (st.sheets || []).forEach(function (im) { if (im) { im.onload = im.onerror = null; try { im.src = ''; } catch (e) {} } });
+      delete anims[name]; rev++;
     }
     function startAnims() {
       EAGER.forEach(loadAnim);
-      var q = PREFETCH.concat(Object.keys(animMeta)).filter(function (n, i, arr) { return animMeta[n] && arr.indexOf(n) === i && EAGER.indexOf(n) < 0; });
+      // phones prefetch only the clips a first round needs; the rest load on use and unload when stale
+      var prefer = LOW ? ['hero_jump', 'hero_fall', 'hero_win', 'imp_idle'] : PREFETCH;
+      var q = prefer.concat(LOW ? [] : Object.keys(animMeta)).filter(function (n, i, arr) { return animMeta[n] && arr.indexOf(n) === i && EAGER.indexOf(n) < 0; });
       (function next() { // one at a time, after the first paint, so the eager art and first frames win the bandwidth
         if (!q.length) return; var st = loadAnim(q.shift());
         var iv = setInterval(function () { if (!st || st.ready || st.failed) { clearInterval(iv); setTimeout(next, 120); } }, 100);
       })();
     }
+    if (LOW) setInterval(function () {
+      var now = Date.now();
+      Object.keys(anims).forEach(function (n) {
+        var st = anims[n];
+        if (EAGER.indexOf(n) >= 0 || !st || !st.ready) return;
+        if (now - (st.used || 0) > 40000) releaseAnim(n);
+      });
+    }, 8000);
     // http(s) builds can pick up anims added after the manifest was generated (assets/anim/index.json); file:// relies on manifest.js
     function discoverAnims() {
       if (Object.keys(animMeta).length || typeof fetch === 'undefined' || !/^https?:$/.test(location.protocol)) return Promise.resolve();
@@ -227,11 +287,11 @@
       }).catch(function () {});
     }
     setTimeout(function () { discoverAnims().then(startAnims); }, 0);
-    function audioUrl(name) { var a = M.audio && M.audio[name]; return a && a.src ? base + a.src : null; }
-    function stats() { return { loaded: loaded, failed: failed.slice(), fallbacks: Object.keys(M.images || {}).filter(isFallback).length, total: Object.keys(M.images || {}).length }; }
+    function audioUrl(name) { var a = M.audio && M.audio[name]; return a && a.src ? bust(base + a.src) : null; }
+    function stats() { return { loaded: loaded, failed: failed.slice(), fallbacks: Object.keys(M.images || {}).filter(isFallback).length, total: Object.keys(M.images || {}).length, low: LOW }; }
     // pre-render the common fallbacks so the first frames don't stutter
     function warm(names) { names.forEach(function (n) { img(n); }); }
-    return { rev: function () { return rev; }, ready: ready, img: img, slabVariant: slabVariant, underlit: underlit, anim: anim, hasAnim: hasAnim, animCell: animCell, animMeta: function (n) { return animMeta[n] || null; }, meta: meta, isFallback: isFallback, tinted: tinted, hazard: hazard, streak: streak, ledge: ledge, bg: bg, band: band, hasBand: hasBand, audioUrl: audioUrl, stats: stats, warm: warm, manifest: M };
+    return { rev: function () { return rev; }, ready: ready, img: img, slabVariant: slabVariant, underlit: underlit, anim: anim, hasAnim: hasAnim, animCell: animCell, animMeta: function (n) { return animMeta[n] || null; }, meta: meta, isFallback: isFallback, tinted: tinted, hazard: hazard, streak: streak, ledge: ledge, bg: bg, band: band, hasBand: hasBand, audioUrl: audioUrl, stats: stats, warm: warm, manifest: M, ensure: ensure, onProgress: onProgress, releaseAnim: releaseAnim, assetUrl: function (src) { return bust(base + src); } };
   }
   root.LavaAssets = Assets;
 })(this);

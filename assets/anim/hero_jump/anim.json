@@ -21,5 +21,9 @@
  ],
  "landFrame": 21,
  "charH": 273,
- "drawScale": 2.0623
+ "drawScale": 2.0623,
+ "halfSheets": [
+  "sheet0_half.webp"
+ ],
+ "halfScale": 0.5
 }
