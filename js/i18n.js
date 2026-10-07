@@ -19,7 +19,7 @@
       nextBtn: 'Next', gotIt: 'Got it', home: 'Lobby',
       round: 'Round', replay: 'Replay', close: 'Close',
       detail: 'Bet {bet} · {result} · {steps} steps · idols x{j}',
-      demo: 'Demo, virtual coins only, no real money.', real: 'Real-money shell. Wallet is not connected.'
+      demo: 'Demo, virtual coins only, no real money.', real: 'Real-money shell. Wallet is not connected.', modeCash: 'Cash out', modeSlab: 'Pick slab'
     },
     uk: {
       go: 'СТАРТ', step: 'КРОК', cash: 'ЗАБРАТИ', bet: 'СТАВКА', history: 'Історія', none: 'Раундів ще немає',
@@ -38,7 +38,7 @@
       nextBtn: 'Далі', gotIt: 'Зрозуміло', home: 'Лобі',
       round: 'Раунд', replay: 'Повтор', close: 'Закрити',
       detail: 'Ставка {bet} · {result} · кроків {steps} · ідоли x{j}',
-      demo: 'Демо, лише віртуальні монети, без справжніх грошей.', real: 'Режим real. Гаманець не підключено.'
+      demo: 'Демо, лише віртуальні монети, без справжніх грошей.', real: 'Режим real. Гаманець не підключено.', modeCash: 'Кешаут', modeSlab: 'Плита'
     },
     'pt-BR': {
       go: 'IR', step: 'PASSO', cash: 'SACAR', bet: 'APOSTA', history: 'Histórico', none: 'Nenhuma rodada ainda',
@@ -57,7 +57,7 @@
       nextBtn: 'Próximo', gotIt: 'Entendi', home: 'Lobby',
       round: 'Rodada', replay: 'Replay', close: 'Fechar',
       detail: 'Aposta {bet} · {result} · {steps} passos · ídolos x{j}',
-      demo: 'Demo, só moedas virtuais, sem dinheiro real.', real: 'Modo real. Carteira não conectada.'
+      demo: 'Demo, só moedas virtuais, sem dinheiro real.', real: 'Modo real. Carteira não conectada.', modeCash: 'Sacar', modeSlab: 'Laje'
     },
     es: {
       go: 'IR', step: 'PASO', cash: 'COBRAR', bet: 'APUESTA', history: 'Historial', none: 'Aún no hay rondas',
@@ -76,7 +76,7 @@
       nextBtn: 'Siguiente', gotIt: 'Listo', home: 'Lobby',
       round: 'Ronda', replay: 'Repetición', close: 'Cerrar',
       detail: 'Apuesta {bet} · {result} · {steps} pasos · ídolos x{j}',
-      demo: 'Demo, solo monedas virtuales, sin dinero real.', real: 'Modo real. Billetera no conectada.'
+      demo: 'Demo, solo monedas virtuales, sin dinero real.', real: 'Modo real. Billetera no conectada.', modeCash: 'Cobrar', modeSlab: 'Losa'
     }
   };
   function t(key, vars) {

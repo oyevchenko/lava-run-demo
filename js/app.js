@@ -131,7 +131,7 @@
       sfx: typeof saved.sfx === 'boolean' ? saved.sfx : !legacyMute,
       calm: typeof saved.calm === 'boolean' ? saved.calm : !!reduceMq.matches,
       history: Array.isArray(saved.history) ? saved.history.slice(0, 20) : [],
-      autoStep: cfg.stake ? (saved.autoStep || 5) : (cfg.autocash ? (saved.autoStep || 0) : 0),
+      autoStep: (cfg.stake || saved.playMode === 'slab') ? (saved.autoStep || 5) : (cfg.autocash ? (saved.autoStep || 0) : 0),
       round: null, last: null, busy: false, rounds: saved.rounds || 0
     };
     var shown = st.balance; // displayed balance (animated count-up toward st.balance)
@@ -139,7 +139,7 @@
     function save() {
       var r = provider.current();
       store.setItem(STORE_KEY, JSON.stringify({ balance: st.balance, bet: st.bet, diff: st.diff, rtp: st.rtp, music: st.music, sfx: st.sfx, calm: st.calm,
-        history: st.history, rounds: st.rounds, autoStep: st.autoStep, activeRound: r && r.status === 'active' ? r : null }));
+        history: st.history, rounds: st.rounds, autoStep: st.autoStep, playMode: cfg.stake ? 'slab' : 'cash', activeRound: r && r.status === 'active' ? r : null }));
     }
 
     // ---------- settings ----------
@@ -159,7 +159,18 @@
     $('optMusic').addEventListener('change', function (e) { setOpt('music', e.target.checked); });
     $('optSfx').addEventListener('change', function (e) { setOpt('sfx', e.target.checked); });
     $('optCalm').addEventListener('change', function (e) { setOpt('calm', e.target.checked); });
-    if (reduceMq.addEventListener) reduceMq.addEventListener('change', function () { scene.setReduced(!!reduceMq.matches); });
+    if (!cfg.stake && saved.playMode === 'slab') cfg.stake = true;
+    function setPlayMode(mode) {
+      if (st.round) { banner('info', t('locked'), t('lockedSub')); return; }
+      st.busy = false;
+      cfg.stake = mode === 'slab';
+      document.documentElement.classList.toggle('stake', cfg.stake);
+      if (cfg.stake && (!st.autoStep || st.autoStep > model.steps(st.diff))) st.autoStep = Math.min(5, model.steps(st.diff));
+      audio.click(); save(); renderAll();
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('#modeSeg button'), function (b) {
+      b.addEventListener('click', function () { setPlayMode(b.dataset.mode); });
+    });
     // audio may only start after a user gesture
     function unlockAudio() { audio.unlock(); }
     document.addEventListener('pointerdown', unlockAudio, true); document.addEventListener('keydown', unlockAudio, true);
@@ -344,6 +355,11 @@
       Array.prototype.forEach.call(document.querySelectorAll('.chips .chip'), function (c) { c.disabled = active || st.busy; });
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
+      Array.prototype.forEach.call(document.querySelectorAll('#modeSeg button'), function (b) {
+        var on = (b.dataset.mode === 'slab') === !!cfg.stake;
+        b.classList.toggle('active', on); b.setAttribute('aria-selected', on); b.disabled = !!st.round || st.busy;
+        b.textContent = b.dataset.mode === 'slab' ? t('modeSlab') : t('modeCash');
+      });
       renderAuto();
       renderSlab();
     }
@@ -587,7 +603,6 @@
     });
     $('goBtn').addEventListener('click', onGo);
     if ($('cashBtn')) $('cashBtn').addEventListener('click', onCash);
-    if (cfg.stake && $('cashBtn')) $('cashBtn').remove();
     if ($('slabMinus')) $('slabMinus').addEventListener('click', function () { nudgeSlab(-1); });
     if ($('slabPlus')) $('slabPlus').addEventListener('click', function () { nudgeSlab(1); });
     $('refillBtn').addEventListener('click', function () {
