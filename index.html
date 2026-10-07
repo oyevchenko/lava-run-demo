@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610072117" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
+<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610072128" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18.5a3 3 0 1 1-2-2.83V5.5l11-2.5v12.5a3 3 0 1 1-2-2.83V7.3L9 8.9z" fill="currentColor"/></symbol>
@@ -75,10 +75,8 @@
   <aside class="side">
     <section class="ladder-wrap"><div id="ladder" class="ladder" aria-label="Upcoming multipliers"></div></section>
     <section class="desk-help" id="deskHelp">
-      <b>How to play</b>
-      <p>GO steps onto the next slab. It can fall.</p>
-      <p>CASH OUT any time after the first safe step. Space steps, C cashes out.</p>
-      <p>A Golden Idol doubles this multiplier and every slab after it.</p>
+      <button type="button" class="desk-toggle" id="deskToggle" aria-expanded="false"><span id="deskTitle">How to play</span></button>
+      <div class="desk-body" id="deskBody" hidden></div>
     </section>
 
     <section class="controls">
@@ -86,6 +84,15 @@
       <div class="auto-row" id="autoRow">
         <div class="auto-label" id="autoLabel">Auto cash-out</div>
         <div id="autoSeg" class="seg" role="tablist" aria-label="Auto cash-out"></div>
+      </div>
+      <div class="slab-row" id="slabRow" hidden>
+        <div class="auto-label" id="slabLabel">Обери плиту</div>
+        <div class="bet-box">
+          <button id="slabMinus" class="bet-btn" type="button" aria-label="Previous slab">&minus;</button>
+          <div class="bet-val"><div class="bet-label" id="slabCap">SLAB</div><div class="bet-num"><span id="slabVal">5</span></div></div>
+          <button id="slabPlus" class="bet-btn" type="button" aria-label="Next slab">+</button>
+        </div>
+        <div class="slab-mult stroke" id="slabMult">x1.00</div>
       </div>
       <div class="bet-row">
         <div class="bet-box">
@@ -102,7 +109,11 @@
       <div class="main-btns">
         <button id="goBtn" class="btn btn-go"><span id="goLabel" class="stroke">GO</span><small id="goSub" class="stroke">bet 10 &amp; step</small></button>
         <button id="cashBtn" class="btn btn-cash" disabled><span class="stroke">CASH OUT</span><small id="cashSub" class="stroke">&mdash;</small></button>
-        <div id="possibleWin" class="btn btn-cash possible" hidden><span id="possibleAmt" class="stroke">—</span><small id="possibleSub" class="stroke">possible win</small></div>
+        <div id="possibleWin" class="possible" hidden>
+          <div id="possibleTitle" class="stroke">Possible win</div>
+          <div id="possibleAmt" class="stroke">—</div>
+          <div id="possibleSub">if the slab holds</div>
+        </div>
       </div>
     </section>
 
@@ -141,6 +152,8 @@
       <li>A <b>Golden Idol</b> on a safe slab <b>doubles</b> the running multiplier, including every slab after it. Idols are inside the RTP.</li>
       <li>The run descends through Dante's nine circles, from Limbo to frozen Cocytus. The last slab, or the max win of <span id="capNote">10,000x</span>, cashes out on its own.</li>
     </ol>
+    <h3 id="stakeHead" hidden>Stake mode</h3>
+    <ol class="rules" id="stakeRules" hidden></ol>
     <h3>Limits</h3>
     <ul class="rules">
       <li>Bet from <b id="minBetNote">1</b> to <b id="maxBetNote">500</b> virtual coins. The demo starts at 1,000.</li>
@@ -180,22 +193,22 @@
   </div>
 </div>
 
-<script src="js/build.js?v=202610072117"></script>
-<script src="js/config.js?v=202610072117"></script>
-<script src="js/i18n.js?v=202610072117"></script>
-<script src="js/analytics.js?v=202610072117"></script>
-<script src="data/lava-run-tables.js?v=202610072117"></script>
-<script src="assets/manifest.js?v=202610072117"></script>
-<script src="js/rng.js?v=202610072117"></script>
-<script src="js/engine.js?v=202610072117"></script>
-<script src="js/circles.js?v=202610072117"></script>
-<script src="js/art/core.js?v=202610072117"></script>
-<script src="js/art/props.js?v=202610072117"></script>
-<script src="js/art/hero.js?v=202610072117"></script>
-<script src="js/assets.js?v=202610072117"></script>
-<script src="js/audio.js?v=202610072117"></script>
-<script src="js/lava-gl.js?v=202610072117"></script>
-<script src="js/render.js?v=202610072117"></script>
-<script src="js/app.js?v=202610072117"></script>
+<script src="js/build.js?v=202610072128"></script>
+<script src="js/config.js?v=202610072128"></script>
+<script src="js/i18n.js?v=202610072128"></script>
+<script src="js/analytics.js?v=202610072128"></script>
+<script src="data/lava-run-tables.js?v=202610072128"></script>
+<script src="assets/manifest.js?v=202610072128"></script>
+<script src="js/rng.js?v=202610072128"></script>
+<script src="js/engine.js?v=202610072128"></script>
+<script src="js/circles.js?v=202610072128"></script>
+<script src="js/art/core.js?v=202610072128"></script>
+<script src="js/art/props.js?v=202610072128"></script>
+<script src="js/art/hero.js?v=202610072128"></script>
+<script src="js/assets.js?v=202610072128"></script>
+<script src="js/audio.js?v=202610072128"></script>
+<script src="js/lava-gl.js?v=202610072128"></script>
+<script src="js/render.js?v=202610072128"></script>
+<script src="js/app.js?v=202610072128"></script>
 </body>
 </html>

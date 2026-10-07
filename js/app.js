@@ -315,30 +315,53 @@
       $('goBtn').disabled = st.busy || broke;
       $('goBtn').title = broke ? t('brokeTitle') : '';
       var canCash = !cfg.stake && active && st.round.k >= 1 && !st.busy;
-      $('cashBtn').hidden = !!cfg.stake;
+      if ($('cashBtn')) {
+        $('cashBtn').hidden = !!cfg.stake;
+        $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
+        $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
+        var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
+      }
       var pw = $('possibleWin');
       if (pw) {
         pw.hidden = !cfg.stake;
         if (cfg.stake && st.autoStep) {
           var pm = model.multCents(st.rtp, st.diff, st.autoStep, 0);
+          $('possibleTitle').textContent = t('possible');
           $('possibleAmt').textContent = fmt(st.bet * pm);
           $('possibleSub').textContent = t('ifHolds', { n: st.autoStep });
         }
       }
-      $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
-      $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
       ['betMinus', 'betPlus'].forEach(function (id) { $(id).disabled = active || st.busy; });
       Array.prototype.forEach.call(document.querySelectorAll('.chips .chip'), function (c) { c.disabled = active || st.busy; });
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
-      var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
       renderAuto();
+      renderSlab();
+    }
+    function renderSlab() {
+      var row = $('slabRow'); if (!row) return;
+      row.hidden = !cfg.stake;
+      if (!cfg.stake) return;
+      var n = model.steps(st.diff);
+      if (!st.autoStep || st.autoStep > n) st.autoStep = Math.min(5, n);
+      $('slabLabel').textContent = t('pickSlab');
+      $('slabCap').textContent = t('slab');
+      $('slabVal').textContent = String(st.autoStep);
+      $('slabMult').textContent = fmtMult(model.multCents(st.rtp, st.diff, st.autoStep, 0));
+      $('slabMinus').disabled = !!st.round || st.busy || st.autoStep <= 1;
+      $('slabPlus').disabled = !!st.round || st.busy || st.autoStep >= n;
+    }
+    function nudgeSlab(d) {
+      if (!cfg.stake || st.round || st.busy) return;
+      var n = model.steps(st.diff);
+      st.autoStep = Math.max(1, Math.min(n, (st.autoStep || 1) + d));
+      audio.click(); save(); renderControls();
     }
     function renderAuto() {
       var row = $('autoRow'), seg = $('autoSeg'); if (!row || !seg) return;
-      row.hidden = !cfg.autocash;
+      row.hidden = !cfg.autocash || !!cfg.stake;
       row.classList.toggle('locked', !!st.round || st.busy);
-      $('autoLabel').textContent = cfg.stake ? t('possible') : t('auto');
+      $('autoLabel').textContent = t('auto');
       var n = model.steps(st.diff);
       var opts = cfg.stake
         ? [{ v: 3, l: '3' }, { v: 5, l: '5' }, { v: 10, l: '10' }, { v: n, l: 'MAX' }]
@@ -552,7 +575,10 @@
       });
     });
     $('goBtn').addEventListener('click', onGo);
-    $('cashBtn').addEventListener('click', onCash);
+    if ($('cashBtn')) $('cashBtn').addEventListener('click', onCash);
+    if (cfg.stake && $('cashBtn')) $('cashBtn').remove();
+    if ($('slabMinus')) $('slabMinus').addEventListener('click', function () { nudgeSlab(-1); });
+    if ($('slabPlus')) $('slabPlus').addEventListener('click', function () { nudgeSlab(1); });
     $('refillBtn').addEventListener('click', function () {
       if (st.round || st.busy || st.balance >= START_COINS * 100) return;
       var add = START_COINS * 100 - st.balance; st.balance = START_COINS * 100; save(); audio.refill();
@@ -617,7 +643,20 @@
     });
     if ($('modeNote')) $('modeNote').textContent = cfg.stake ? t('stake') : (cfg.mode === 'real' ? t('real') : t('demo'));
     document.documentElement.classList.toggle('stake', !!cfg.stake);
-    var help = $('deskHelp'); if (help) help.innerHTML = '<b>' + t('how') + '</b><p>' + t('how1') + '</p><p>' + t('how2') + '</p><p>' + t('how3') + '</p>';
+    var help = $('deskHelp');
+    if (help && $('deskBody')) {
+      $('deskTitle').textContent = t('how');
+      $('deskBody').innerHTML = '<p>' + t('how1') + '</p><p>' + (cfg.stake ? t('stakeRule2') : t('how2')) + '</p><p>' + t('how3') + '</p>';
+      $('deskToggle').addEventListener('click', function () {
+        var open = help.classList.toggle('open');
+        $('deskBody').hidden = !open;
+        $('deskToggle').setAttribute('aria-expanded', open);
+      });
+    }
+    if (cfg.stake && $('stakeRules')) {
+      $('stakeHead').hidden = false; $('stakeRules').hidden = false;
+      $('stakeRules').innerHTML = '<li>' + t('stakeRule1') + '</li><li>' + t('stakeRule2') + '</li><li>' + t('stakeRule3') + '</li>';
+    }
     var openRound = null;
     function showRound(h) {
       openRound = h; $('roundTitle').textContent = t('round') + (h.id ? ' ' + h.id : '');

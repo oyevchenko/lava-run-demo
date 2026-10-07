@@ -463,9 +463,22 @@ html.desk #frameDeco:before{top:-26px}html.desk #frameDeco:after{bottom:-26px}
 html.desk #frameDeco i{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffb0a0,#d0203a 45%,#6a0814 80%);box-shadow:0 0 0 3px #ffd96a,0 0 0 5px #7a4a10,0 0 14px rgba(255,80,60,.8)}
 html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:nth-child(2){right:-19px;top:-19px}html.desk #frameDeco i:nth-child(3){left:-19px;bottom:-19px}html.desk #frameDeco i:nth-child(4){right:-19px;bottom:-19px}
 html.desk .ladder-wrap{order:1;flex:0 1 auto;max-height:46%}
-html.desk .desk-help{order:2;display:block;flex:0 0 auto;margin:8px 12px 0;padding:8px 10px;border-radius:13px;background:linear-gradient(#fbf1dc,#e6cfa2);border:0;box-shadow:inset 0 -4px 0 #c9a46a,0 3px 0 #4a0a14;color:#6a2a1a;font:13px/1.35 'Rubik',sans-serif}
-html.desk .desk-help b{display:block;font:14px 'Lilita One',sans-serif;letter-spacing:.4px;margin-bottom:2px;color:#7e1427}
-html.desk .desk-help p{margin:2px 0}
+.slab-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+.slab-row[hidden]{display:none}
+.slab-row .bet-box{flex:1;height:48px}
+.slab-mult{flex:0 0 72px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:13px;background:linear-gradient(#ffe27a,#f2b02a);box-shadow:inset 0 -4px 0 #b8700c,0 3px 0 #4a0a14;color:#fff;font:18px 'Lilita One',sans-serif;-webkit-text-stroke:2px #8a4a06;paint-order:stroke fill}
+.possible{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(#fff07a,#ffc62a 55%,#f3a312);box-shadow:inset 0 -6px 0 #c0700c,0 4px 0 #3a0810,0 0 0 3px #fff6c0;color:#fff;text-align:center;padding:4px 6px}
+.possible[hidden]{display:none}
+#possibleTitle{font:13px 'Lilita One',sans-serif;-webkit-text-stroke:2px #7a3a04;paint-order:stroke fill;letter-spacing:.3px}
+#possibleAmt{font:26px 'Lilita One',sans-serif;-webkit-text-stroke:3px #7a3a04;paint-order:stroke fill;line-height:1}
+#possibleSub{font:11px 'Lilita One',sans-serif;color:#7a3a04;letter-spacing:.2px}
+html.desk .desk-help{order:2;display:block;flex:0 0 auto;margin:8px 12px 0;padding:0;border-radius:13px;background:linear-gradient(#fbf1dc,#e6cfa2);border:0;box-shadow:inset 0 -4px 0 #c9a46a,0 3px 0 #4a0a14;color:#6a2a1a;overflow:hidden}
+html.desk .desk-toggle{width:100%;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font:15px 'Lilita One',sans-serif;letter-spacing:.4px;color:#fff;-webkit-text-stroke:2px #7e1427;paint-order:stroke fill;background:linear-gradient(#ffe27a,#f2b02a)}
+html.desk .desk-toggle:after{content:'+';font-size:20px}
+html.desk .desk-help.open .desk-toggle:after{content:'–'}
+html.desk .desk-body{padding:8px 12px 10px;font:13px/1.35 'Lilita One',sans-serif;color:#6a2a1a}
+html.desk .desk-body p{margin:3px 0}
+html.desk .desk-body[hidden]{display:none}
 html.desk .history-wrap{order:3;flex:1 1 auto;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
 html.desk .history{flex-direction:column;overflow:auto}
 html.desk .controls{order:4}
