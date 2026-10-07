@@ -146,11 +146,13 @@
         after(Math.round((pre + dur) * 1000) + 1, function () { // landed
           var jumpClip = hero.clip && hero.clip.name === 'hero_jump' ? hero.clip : null;
           hero.anim = { type: 'land', t0: t, clip: !!jumpClip }; hero.z = to.z;
-          if (jumpClip) { // this is the clip's landFrame: thud. The clip ends on a pose that isn't idle, so cut (never crossfade) to the standing pose
-            shakeOn(1.2);    // ~0.26 s after touchdown (before any anticipation/reveal, so the arms-up end pose never reads as a premature win), masked by a dust puff + ring
-            var restMs = Math.max(0, (assets.animMeta('hero_jump').dur - (t - jumpClip.t0) * jumpClip.rate) / jumpClip.rate * 1000);
-            after(Math.min(restMs + 120, 260), function () { if (hero.clip === jumpClip) { hero.clip = null; dust(to.z, to.x, 8); ring(k, 0.4); } });
-          } hero.x = to.x; hero.hop = 0;
+          if (jumpClip) { // this is the clip's landFrame: thud. After it the clip lowers the arms and ends on hero_idle frame 0,
+            // so it flows straight into the idle loop. The post-landing part plays faster so the arms-up landing pose is brief
+            // and the hero is back to standing ~1.5 s after touchdown; a STEP tap during it starts the next jump at once.
+            shakeOn(1.2);
+            var jmm = assets.animMeta('hero_jump'), lf = jmm.landFrame != null ? jmm.landFrame : Math.round(jmm.frames * 0.75), post = Math.max(jumpClip.rate, 1.8);
+            if (jmm.frames - lf > 12) { jumpClip.rate = post; jumpClip.t0 = t - lf / jmm.fps / post; } // re-base: same frame now, faster from here
+          }
           dust(to.z, to.x, 12); ring(k, 0.5);
           if (o.onLand) o.onLand();
           // anticipation before EVERY reveal (outcome-neutral): a short push-in; longer, with a heartbeat, when more is at stake
@@ -163,7 +165,6 @@
           if (o.onTension) o.onTension(tension);
           after(tensionMs + 40, function () {
             zoomTarget = 1; lastReveal = t;
-            if (hero.clip && hero.clip.name === 'hero_jump') hero.clip = null; // cut hidden under the reveal (safe burst / crack)
             if (o.onReveal) o.onReveal(outcome);
             if (outcome === 'collapse') { collapse(k, resolve); return; }
             slabs[k].state = 'passed'; hero.pose = 'hero_idle'; hero.idleSince = t;
@@ -766,7 +767,7 @@
         else if (cr && t >= clip.t0) {
           var cf = animFrame(clip.name, clip.t0, clip.rate);
           if (clip.name === 'hero_fall' && cf.meta.exitFrame != null && cf.idx >= cf.meta.exitFrame) { alpha = 0; clipOn = true; }
-          else if (cf.done && !cf.meta.holdLast) { if (clip.name === 'hero_fall') alpha = 0; else { hero.clip = clip = null; hero.idleSince = t; } }
+          else if (cf.done && !cf.meta.holdLast) { if (clip.name === 'hero_fall') alpha = 0; else { hero.clip = clip = null; hero.idleSince = t; hero.lastPose = ''; } }  // the stand loop restarts at frame 0 (the clips end on idle frame 0)
           else clipOn = true;
         }
       }

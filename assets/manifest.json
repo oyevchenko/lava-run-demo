@@ -922,12 +922,12 @@
   "hero_jump": {
    "fps": 12,
    "loop": false,
-   "holdLast": true,
+   "holdLast": false,
    "frameW": 384,
    "frameH": 480,
-   "cols": 7,
-   "rows": 5,
-   "frames": 29,
+   "cols": 9,
+   "rows": 7,
+   "frames": 56,
    "anchor": [
     0.5,
     0.95
