@@ -288,6 +288,8 @@ svg{width:100%;height:100%;display:block}
 .auto-row .seg{height:40px}
 .auto-row.locked{pointer-events:none}
 .auto-row.locked .seg button:not(.active){opacity:.35}
+#cashBtn[hidden]{display:none}
+html.stake .main-btns .btn-go{flex:1}
 .home-btn[hidden]{display:none}
 .h{cursor:pointer}
 .round-replay{width:100%;height:52px;margin-top:12px}
