@@ -444,7 +444,13 @@ html.stake .main-btns .btn-go{flex:1}
 .calm .win-overlay:before{animation-duration:60s;opacity:.45}
 .calm .win-overlay .win-card{animation:winIn .3s ease-out}
 .calm .win-overlay:after{animation:none}
-.calm .plaque.flash{animation:none}
+/* plaque must show the circle name and a step like 24/24; the painted frame was clipping both */
+.plaque,.has-ui-plaque .plaque,.has-ui-panel-crimson .plaque{height:102px;overflow:visible;align-items:center}
+.medal,.has-ui-medallion .medal{flex:0 0 78px;width:78px;height:78px}
+.medal-r small{font-size:12px}
+.medal-r span,.has-ui-medallion .medal-r span{font-size:18px;letter-spacing:-.6px;--sw:2px}
+.hud-next{font-size:15px;letter-spacing:1px;text-transform:uppercase}
+.circle-label{margin-top:3px}
 @media (prefers-reduced-motion: reduce){ .btn:before,.has-logo .logo:after,.plaque:after,.balance .coin{animation:none;opacity:0} .win-overlay:before{animation:none} }
 
 /* 2) desktop: the whole cabinet is laid out at a fixed reference size and scaled to the window height (crisp: the
@@ -479,7 +485,7 @@ html.desk .desk-help.open .desk-toggle:after{content:'–'}
 html.desk .desk-body{padding:8px 12px 10px;font:13px/1.35 'Lilita One',sans-serif;color:#6a2a1a}
 html.desk .desk-body p{margin:3px 0}
 html.desk .desk-body[hidden]{display:none}
-html.desk .history-wrap{order:3;flex:0 0 auto;max-height:88px;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
+html.desk .history-wrap{order:3;flex:0 0 auto;max-height:150px;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
 html.desk .history{flex-direction:column;overflow:auto}
 html.desk .controls{order:4}
 html.desk .footer{order:5}

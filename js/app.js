@@ -171,10 +171,13 @@
       var b = document.createElement('button'); b.dataset.d = id; b.setAttribute('role', 'tab');
       b.innerHTML = '<svg><use href="#i-' + (ICON[id] || 'flame') + '"/></svg><span>' + model.difficulties[id].label + '</span>';
       b.addEventListener('click', function () {
-        if (st.round || st.busy) return;
+        if (st.round) { banner('info', t('locked'), t('lockedSub')); return; }
+        st.busy = false;
         audio.click(); st.diff = id; st.last = null;
-        var n = model.steps(id), prev = st.autoStep;
-        if (cfg.stake && prev > n) { st.autoStep = n; banner('info', t('slabFit'), t('slabFitSub', { n: n })); }
+        var n = model.steps(id), prev = st.autoStep || 0;
+        if (prev > n) st.autoStep = n;
+        else if (cfg.stake && !prev) st.autoStep = Math.min(5, n);
+        if (prev > n) banner('info', t('slabFit'), t('slabFitSub', { from: prev, n: n }));
         hideWin(); resetScene(); renderAll(); save();
       });
       seg.appendChild(b);
@@ -350,6 +353,7 @@
       if (!cfg.stake) return;
       var n = model.steps(st.diff);
       if (!st.autoStep || st.autoStep > n) st.autoStep = n;
+      if (st.autoStep < 1) st.autoStep = 1;
       $('slabLabel').textContent = t('pickSlab');
       $('slabCap').textContent = t('slab');
       $('slabVal').textContent = String(st.autoStep);
@@ -551,7 +555,7 @@
       if (st.busy) return;
       if (st.round) return doStep();
       if (cfg.stake && !st.autoStep) { banner('info', t('pick'), t('stake')); return; }
-      if (cfg.stake && st.autoStep > model.steps(st.diff)) { st.autoStep = model.steps(st.diff); banner('info', t('slabFit'), t('slabFitSub', { n: st.autoStep })); renderControls(); return; }
+      if (cfg.stake && st.autoStep > model.steps(st.diff)) st.autoStep = model.steps(st.diff);
       if (st.bet * 100 > st.balance) { banner('info', t('notEnough'), t('notEnoughSub')); return; }
       st.busy = true; hideWin(); hideBanner();
       provider.start({ bet: st.bet, difficulty: st.diff, rtp: st.rtp }).then(function (res) {
