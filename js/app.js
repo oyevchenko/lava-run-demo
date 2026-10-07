@@ -131,7 +131,6 @@
       sfx: typeof saved.sfx === 'boolean' ? saved.sfx : !legacyMute,
       calm: typeof saved.calm === 'boolean' ? saved.calm : !!reduceMq.matches,
       history: Array.isArray(saved.history) ? saved.history.slice(0, 20) : [],
-      autoOn: cfg.autocash && !!saved.autoOn, autoStep: saved.autoStep || 0,
       round: null, last: null, busy: false, rounds: saved.rounds || 0
     };
     var shown = st.balance; // displayed balance (animated count-up toward st.balance)
@@ -139,7 +138,7 @@
     function save() {
       var r = provider.current();
       store.setItem(STORE_KEY, JSON.stringify({ balance: st.balance, bet: st.bet, diff: st.diff, rtp: st.rtp, music: st.music, sfx: st.sfx, calm: st.calm,
-        history: st.history, rounds: st.rounds, autoOn: st.autoOn, autoStep: st.autoStep, activeRound: r && r.status === 'active' ? r : null }));
+        history: st.history, rounds: st.rounds, activeRound: r && r.status === 'active' ? r : null }));
     }
 
     // ---------- settings ----------
@@ -321,14 +320,12 @@
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
       var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
-      fillAuto();
     }
     function renderHistory() {
       $('history').innerHTML = st.history.map(function (h, i) {
-        var when = h.t ? new Date(h.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var tail = (h.bet != null ? ' bet ' + h.bet : '') + (h.win ? ' +' + fmt(h.pay || 0) : '') + (when ? ' ' + when : '') + (h.id ? ' #' + String(h.id).slice(-4) : '');
-        return h.win ? '<span class="h w" data-i="' + i + '" title="' + tail + '">' + fmtMult(h.mult) + '<span class="d">' + h.d + tail + '</span></span>'
-                     : '<span class="h l" data-i="' + i + '" title="' + tail + '">LAVA<span class="d">' + h.d + ' @' + h.k + tail + '</span></span>';
+        var tail = h.d + (h.k ? ' @' + h.k : '');
+        return h.win ? '<span class="h w" data-i="' + i + '">' + fmtMult(h.mult) + '<span class="d">' + tail + '</span></span>'
+                     : '<span class="h l" data-i="' + i + '">LAVA<span class="d">' + tail + '</span></span>';
       }).join('') || '<span class="h">' + t('none') + '</span>';
     }
     function renderAll(lostAt) { renderControls(); renderLadder(lostAt); renderHud(); renderHistory(); renderInfo(); }
@@ -466,12 +463,6 @@
             track('loss', { id: res.round && res.round.id, k: k, bet: res.round && res.round.bet });
             return;
           }
-          if (!wonRound && st.autoOn && st.autoStep && res.round.k >= st.autoStep) {
-            return provider.cashOut().then(function (cr) { track('cashout', { id: cr.round.id, auto: 'target', k: cr.round.k }); var r = settleWin(cr, 'target'); return presentWin(r, cr.payoutCents, 'target'); });
-          }
-          if (!wonRound && cfg.maxWinX < model.cap && res.round.multCents >= Math.round(cfg.maxWinX * 100)) {
-            return provider.cashOut().then(function (cr) { track('cashout', { id: cr.round.id, auto: 'operator-cap', k: cr.round.k }); var r = settleWin(cr, 'cap'); return presentWin(r, cr.payoutCents, 'cap'); });
-          }
           if (wonRound) return presentWin(wonRound, res.payoutCents, res.auto);
         });
       }).catch(function (e) { console.error(e); }).then(function () { st.busy = false; renderControls(); armIdle(); });
@@ -567,22 +558,11 @@
         renderAll(); armIdle();
       });
     }
-    function fillAuto() {
-      var row = $('autoRow'), sel = $('autoStep'); if (!row || !sel) return;
-      row.hidden = !cfg.autocash;
-      $('autoOn').checked = !!st.autoOn;
-      $('autoLabel').textContent = t('auto');
-      var n = model.steps(st.diff), html = '<option value="0">' + t('autoOff') + '</option>';
-      for (var i = 1; i <= n; i++) html += '<option value="' + i + '">' + i + '</option>';
-      if (sel.dataset.n !== String(n)) { sel.innerHTML = html; sel.dataset.n = String(n); }
-      sel.value = String(st.autoStep || 0);
-      sel.disabled = !!st.round || st.busy;
-      $('autoOn').disabled = !!st.round || st.busy;
-    }
-    if ($('autoOn')) $('autoOn').addEventListener('change', function (e) { st.autoOn = e.target.checked; if (st.autoOn && !st.autoStep) st.autoStep = 3; save(); renderControls(); });
-    if ($('autoStep')) $('autoStep').addEventListener('change', function (e) { st.autoStep = parseInt(e.target.value, 10) || 0; st.autoOn = st.autoStep > 0; save(); renderControls(); });
     if (cfg.lobbyUrl && $('homeBtn')) { $('homeBtn').hidden = false; $('homeBtn').title = t('home'); $('homeBtn').addEventListener('click', function () { location.href = cfg.lobbyUrl; }); }
-    if ($('langPick')) { $('langPick').value = cfg.lang; $('langPick').addEventListener('change', function (e) { var u = new URL(location.href); u.searchParams.set('lang', e.target.value); location.href = u.href; }); }
+    Array.prototype.forEach.call(document.querySelectorAll('#langSeg button'), function (b) {
+      b.classList.toggle('active', b.dataset.lang === cfg.lang);
+      b.addEventListener('click', function () { var u = new URL(location.href); u.searchParams.set('lang', b.dataset.lang); location.href = u.href; });
+    });
     if ($('modeNote')) $('modeNote').textContent = cfg.mode === 'real' ? t('real') : t('demo');
     var help = $('deskHelp'); if (help) help.innerHTML = '<b>' + t('how') + '</b><p>' + t('how1') + '</p><p>' + t('how2') + '</p><p>' + t('how3') + '</p>';
     var openRound = null;
@@ -590,7 +570,7 @@
       openRound = h; $('roundTitle').textContent = t('round') + (h.id ? ' ' + h.id : '');
       $('roundBody').textContent = t('detail', { bet: h.bet != null ? h.bet : '?', result: h.win ? t('won', { amt: fmt(h.pay || 0) }) : t('lost', { amt: h.bet || 0 }), steps: h.k, j: Math.pow(2, h.j || 0) });
       $('roundPath').textContent = (h.path || []).join(' · ') || '';
-      $('roundReplay').textContent = t('replay');
+      $('roundReplay').querySelector('span').textContent = t('replay');
       $('roundModal').classList.remove('hidden');
     }
     $('history').addEventListener('click', function (e) {

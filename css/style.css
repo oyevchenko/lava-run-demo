@@ -282,14 +282,10 @@ svg{width:100%;height:100%;display:block}
 .splash-bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:linear-gradient(#fff07a,#f3a312);transition:width .2s linear}
 .splash p{position:relative;font:13px 'Rubik',sans-serif;color:#ffd9a8;opacity:.85;margin:0}
 @keyframes splashIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
-.auto-row{display:flex;align-items:center;gap:8px;margin-top:8px;min-height:44px;font:13px 'Rubik',sans-serif;color:#ffe9a8}
-.auto-row[hidden]{display:none}
-.auto-row select{height:44px;min-width:88px;border-radius:10px;border:2px solid var(--goldline);background:#3a0812;color:#fff;padding:0 8px}
-.auto-row input{width:22px;height:22px}
+.lang-pick{display:block;margin:10px 0 6px;font:14px 'Lilita One',sans-serif;color:#7e1427}
 .home-btn[hidden]{display:none}
-.lang-pick{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:14px}
-.lang-pick select{height:36px;border-radius:8px;border:2px solid #c9923c;background:#fff;color:#5a1a10}
 .h{cursor:pointer}
+.round-replay{width:100%;height:52px;margin-top:12px}
 .coach{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;width:min(420px,calc(100% - 24px));pointer-events:none}
 .coach.hidden{display:none}
 .coach-card{pointer-events:auto;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:linear-gradient(#fbf1dc,#ead6ae);color:#5a1a10;border:3px solid var(--goldline);box-shadow:0 6px 0 #7a4a10}
@@ -458,8 +454,8 @@ html.desk #frameDeco:before{top:-26px}html.desk #frameDeco:after{bottom:-26px}
 html.desk #frameDeco i{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffb0a0,#d0203a 45%,#6a0814 80%);box-shadow:0 0 0 3px #ffd96a,0 0 0 5px #7a4a10,0 0 14px rgba(255,80,60,.8)}
 html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:nth-child(2){right:-19px;top:-19px}html.desk #frameDeco i:nth-child(3){left:-19px;bottom:-19px}html.desk #frameDeco i:nth-child(4){right:-19px;bottom:-19px}
 html.desk .ladder-wrap{order:1;flex:0 1 auto;max-height:46%}
-html.desk .desk-help{order:2;display:block;flex:0 0 auto;margin:8px 12px 0;padding:8px 10px;border-radius:12px;background:rgba(40,8,14,.35);border:1.5px solid rgba(246,196,69,.45);color:#ffe9a8;font:13px/1.35 'Rubik',sans-serif}
-html.desk .desk-help b{display:block;font:14px 'Lilita One',sans-serif;letter-spacing:.4px;margin-bottom:2px}
+html.desk .desk-help{order:2;display:block;flex:0 0 auto;margin:8px 12px 0;padding:8px 10px;border-radius:13px;background:linear-gradient(#fbf1dc,#e6cfa2);border:0;box-shadow:inset 0 -4px 0 #c9a46a,0 3px 0 #4a0a14;color:#6a2a1a;font:13px/1.35 'Rubik',sans-serif}
+html.desk .desk-help b{display:block;font:14px 'Lilita One',sans-serif;letter-spacing:.4px;margin-bottom:2px;color:#7e1427}
 html.desk .desk-help p{margin:2px 0}
 html.desk .history-wrap{order:3;flex:1 1 auto;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
 html.desk .history{flex-direction:column;overflow:auto}
