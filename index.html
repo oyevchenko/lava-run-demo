@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610072014" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
+<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610072021" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18.5a3 3 0 1 1-2-2.83V5.5l11-2.5v12.5a3 3 0 1 1-2-2.83V7.3L9 8.9z" fill="currentColor"/></symbol>
@@ -40,6 +40,7 @@
     <div class="top-actions">
       <button id="musicBtn" class="ib" title="Music" aria-label="Toggle music" aria-pressed="true"><svg><use href="#i-music"/></svg></button>
       <button id="sfxBtn" class="ib" title="Sound effects" aria-label="Toggle sound effects" aria-pressed="true"><svg><use href="#i-sfx"/></svg></button>
+      <button id="homeBtn" class="ib home-btn" hidden title="Lobby" aria-label="Back to lobby"><svg><use href="#i-gate"/></svg></button>
       <button id="infoBtn" class="ib" title="Settings &amp; rules" aria-label="Settings and rules"><svg><use href="#i-gear"/></svg></button>
     </div>
   </header>
@@ -82,6 +83,10 @@
 
     <section class="controls">
       <div id="diffSeg" class="seg" role="tablist" aria-label="Difficulty"></div>
+      <div class="auto-row" id="autoRow">
+        <label><input type="checkbox" id="autoOn"> <span id="autoLabel">Auto cash-out</span></label>
+        <select id="autoStep" aria-label="Auto cash-out slab"></select>
+      </div>
       <div class="bet-row">
         <div class="bet-box">
           <button id="betMinus" class="bet-btn" aria-label="Decrease bet">&minus;</button>
@@ -105,7 +110,7 @@
       <div id="history" class="history"></div>
     </section>
 
-    <footer class="footer">Demo, virtual coins only, no real money. <span id="rtpNote">RTP 96%</span> &middot; 18+</footer>
+    <footer class="footer"><span id="modeNote">Demo, virtual coins only, no real money.</span> <span id="rtpNote">RTP 96%</span> · 18+ · © 2026 All rights reserved</footer>
   </aside>
 </div>
 <div id="frameDeco" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -119,6 +124,14 @@
       <label class="toggle"><input type="checkbox" id="optMusic" checked><span class="sw"></span><span>Music</span></label>
       <label class="toggle"><input type="checkbox" id="optSfx" checked><span class="sw"></span><span>Sound effects</span></label>
       <label class="toggle"><input type="checkbox" id="optCalm"><span class="sw"></span><span>Calm effects <small>(no shake, softer flashes, fewer particles)</small></span></label>
+      <label class="lang-pick">Language
+        <select id="langPick" aria-label="Language">
+          <option value="en">English</option>
+          <option value="uk">Українська</option>
+          <option value="pt-BR">Português (BR)</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
     </div>
     <h3>How to play</h3>
     <ol class="rules">
@@ -151,6 +164,15 @@
 </div>
 
 <div id="turn" class="turn" role="dialog" aria-label="Rotate your phone"><p>Turn your phone upright</p></div>
+<div id="roundModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="roundTitle">
+  <div class="modal-card">
+    <button id="roundClose" class="modal-close" aria-label="Close">&times;</button>
+    <h2 id="roundTitle" class="stroke">Round</h2>
+    <p id="roundBody" class="rules"></p>
+    <p id="roundPath" class="fine"></p>
+    <button id="roundReplay" class="chip" type="button">Replay</button>
+  </div>
+</div>
 <div id="coach" class="coach hidden" role="dialog" aria-label="How to play">
   <div class="coach-card">
     <p id="coachText"></p>
@@ -158,19 +180,22 @@
   </div>
 </div>
 
-<script src="js/build.js?v=202610072014"></script>
-<script src="data/lava-run-tables.js?v=202610072014"></script>
-<script src="assets/manifest.js?v=202610072014"></script>
-<script src="js/rng.js?v=202610072014"></script>
-<script src="js/engine.js?v=202610072014"></script>
-<script src="js/circles.js?v=202610072014"></script>
-<script src="js/art/core.js?v=202610072014"></script>
-<script src="js/art/props.js?v=202610072014"></script>
-<script src="js/art/hero.js?v=202610072014"></script>
-<script src="js/assets.js?v=202610072014"></script>
-<script src="js/audio.js?v=202610072014"></script>
-<script src="js/lava-gl.js?v=202610072014"></script>
-<script src="js/render.js?v=202610072014"></script>
-<script src="js/app.js?v=202610072014"></script>
+<script src="js/build.js?v=202610072021"></script>
+<script src="js/config.js?v=202610072021"></script>
+<script src="js/i18n.js?v=202610072021"></script>
+<script src="js/analytics.js?v=202610072021"></script>
+<script src="data/lava-run-tables.js?v=202610072021"></script>
+<script src="assets/manifest.js?v=202610072021"></script>
+<script src="js/rng.js?v=202610072021"></script>
+<script src="js/engine.js?v=202610072021"></script>
+<script src="js/circles.js?v=202610072021"></script>
+<script src="js/art/core.js?v=202610072021"></script>
+<script src="js/art/props.js?v=202610072021"></script>
+<script src="js/art/hero.js?v=202610072021"></script>
+<script src="js/assets.js?v=202610072021"></script>
+<script src="js/audio.js?v=202610072021"></script>
+<script src="js/lava-gl.js?v=202610072021"></script>
+<script src="js/render.js?v=202610072021"></script>
+<script src="js/app.js?v=202610072021"></script>
 </body>
 </html>

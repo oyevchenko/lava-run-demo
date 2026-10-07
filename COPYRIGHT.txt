@@ -1,0 +1,5 @@
+Lava Run: Inferno
+Copyright (c) 2026 Oleksii Yevchenko. All rights reserved.
+
+This demo is a studio showcase. Virtual coins have no value.
+You may not copy, reskin, or redistribute the game, art, or math without written permission.

@@ -3,8 +3,12 @@
 (function () {
   'use strict';
   var STORE_KEY = 'lavaRun.v1';
-  var START_COINS = 1000, MIN_BET = 1, MAX_BET = 500;
-  var BET_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
+  var cfg = window.LAVA_CONFIG || { lang: 'en', currency: 'COIN', mode: 'demo', lobbyUrl: '', rtp: null, minBet: 1, maxBet: 500, maxWinX: 10000, autocash: true, analyticsUrl: '' };
+  var t = (window.LavaI18n && window.LavaI18n.t) || function (k) { return k; };
+  var track = (window.LavaAnalytics && window.LavaAnalytics.track) || function () {};
+  var START_COINS = 1000, MIN_BET = cfg.minBet, MAX_BET = Math.max(cfg.minBet, cfg.maxBet);
+  var BET_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].filter(function (b) { return b >= MIN_BET && b <= MAX_BET; });
+  if (!BET_STEPS.length) BET_STEPS = [MIN_BET];
   var IDLE_1 = 4500, IDLE_2 = 10000; // gentle idle cues (no decision timer, no auto-actions)
   var $ = function (id) { return document.getElementById(id); };
   var C = window.LavaCircles;
@@ -23,7 +27,14 @@
     return Promise.resolve(window.LAVA_RUN_TABLES); // file:// fallback (identical generated mirror)
   }
 
-  function fmt(c) { return (c / 100).toFixed(2); }
+  function fmt(c) {
+    var v = c / 100;
+    if (!cfg.currency || cfg.currency === 'COIN') return v.toFixed(2);
+    var loc = cfg.lang === 'pt-BR' ? 'pt-BR' : cfg.lang === 'uk' ? 'uk' : cfg.lang;
+    var dec = cfg.currency === 'JPY' || cfg.currency === 'KRW' ? 0 : 2;
+    try { return new Intl.NumberFormat(loc, { style: 'currency', currency: cfg.currency, minimumFractionDigits: dec, maximumFractionDigits: dec }).format(v); }
+    catch (e) { return v.toFixed(dec) + ' ' + cfg.currency; }
+  }
   function fmtMult(c) { return (c / 100).toFixed(2) + 'x'; }
 
   loadTables().then(start).catch(function (e) { console.error(e); document.body.insertAdjacentHTML('beforeend', '<p style="color:#f88;padding:20px">Failed to load game data.</p>'); });
@@ -115,11 +126,12 @@
       balance: Number.isInteger(saved.balance) ? saved.balance : START_COINS * 100,
       bet: saved.bet || 10,
       diff: model.difficulties[saved.diff] ? saved.diff : 'medium',
-      rtp: model.rtpOptions.indexOf(saved.rtp) >= 0 ? saved.rtp : model.defaultRtp,
+      rtp: cfg.rtp && model.rtpOptions.indexOf(cfg.rtp) >= 0 ? cfg.rtp : (model.rtpOptions.indexOf(saved.rtp) >= 0 ? saved.rtp : model.defaultRtp),
       music: typeof saved.music === 'boolean' ? saved.music : !legacyMute,
       sfx: typeof saved.sfx === 'boolean' ? saved.sfx : !legacyMute,
       calm: typeof saved.calm === 'boolean' ? saved.calm : !!reduceMq.matches,
       history: Array.isArray(saved.history) ? saved.history.slice(0, 20) : [],
+      autoOn: cfg.autocash && !!saved.autoOn, autoStep: saved.autoStep || 0,
       round: null, last: null, busy: false, rounds: saved.rounds || 0
     };
     var shown = st.balance; // displayed balance (animated count-up toward st.balance)
@@ -127,7 +139,7 @@
     function save() {
       var r = provider.current();
       store.setItem(STORE_KEY, JSON.stringify({ balance: st.balance, bet: st.bet, diff: st.diff, rtp: st.rtp, music: st.music, sfx: st.sfx, calm: st.calm,
-        history: st.history, rounds: st.rounds, activeRound: r && r.status === 'active' ? r : null }));
+        history: st.history, rounds: st.rounds, autoOn: st.autoOn, autoStep: st.autoStep, activeRound: r && r.status === 'active' ? r : null }));
     }
 
     // ---------- settings ----------
@@ -225,15 +237,15 @@
       if (multHold != null && (st.round || (st.last && st.last.status !== 'lost'))) { $('hudMult').textContent = 'x' + (multHold / 100).toFixed(2); if (st.round) { if (k) { hw.textContent = 'Cash out: ' + fmt(st.round.bet * st.round.multCents); hw.classList.add('cashable'); } } else hw.textContent = 'Won ' + fmt(st.last.payoutCents) + ' coins'; }
       else if (st.round) {
         $('hudMult').textContent = 'x' + ((k ? st.round.multCents : 100) / 100).toFixed(2);
-        if (k) { hw.textContent = 'Cash out: ' + fmt(st.round.bet * st.round.multCents); hw.classList.add('cashable'); }
-        else hw.textContent = 'Bet ' + st.round.bet + ' - take the first step';
+        if (k) { hw.textContent = t('cashOut', { amt: fmt(st.round.bet * st.round.multCents) }); hw.classList.add('cashable'); }
+        else hw.textContent = t('takeFirst', { bet: st.round.bet });
       } else if (st.last) {
         $('hudMult').textContent = st.last.status === 'lost' ? 'x0.00' : 'x' + (st.last.multCents / 100).toFixed(2);
-        hw.textContent = st.last.status === 'lost' ? 'Lost ' + st.last.bet + ' coins' : 'Won ' + fmt(st.last.payoutCents) + ' coins';
+        hw.textContent = st.last.status === 'lost' ? t('lost', { amt: st.last.bet }) : t('won', { amt: fmt(st.last.payoutCents) });
         showNext(null);
       } else {
         $('hudMult').textContent = 'x1.00';
-        hw.textContent = 'Press GO to descend';
+        hw.textContent = t('pressGo');
         showNext(model.multCents(st.rtp, st.diff, 1, 0));
       }
       if (st.round && k < n) showNext(model.multCents(st.rtp, st.diff, k + 1, j));
@@ -243,7 +255,7 @@
     function showNext(cents) {
       var el = $('hudNext'); if (!el) return;
       if (cents == null) { el.hidden = true; return; }
-      el.hidden = false; el.textContent = 'next ' + fmtMult(cents);
+      el.hidden = false; el.textContent = t('next') + ' ' + fmtMult(cents);
     }
     function renderBalance() { $('balance').textContent = fmt(shown); }
     // multiplier counter: holds the old value until the sparks from the slab arrive, then rolls the digits up with a flash
@@ -295,12 +307,12 @@
       seg.classList.toggle('locked', inRound || st.busy);
       var active = inRound;
       var broke = !active && st.bet * 100 > st.balance;
-      $('goLabel').textContent = active ? 'STEP' : 'GO';
-      if (active) { var nk = st.round.k + 1; $('goSub').textContent = nk <= st.round.steps ? 'next: ' + fmtMult(model.multCents(st.rtp, st.diff, nk, st.round.j)) : ''; }
-      else if (broke) $('goSub').textContent = Math.floor(st.balance / 100) < MIN_BET ? 'tap + for coins' : 'lower bet or tap +';
-      else $('goSub').textContent = 'bet ' + st.bet + ' · next ' + fmtMult(model.multCents(st.rtp, st.diff, 1, 0));
+      $('goLabel').textContent = active ? t('step') : t('go');
+      if (active) { var nk = st.round.k + 1; $('goSub').textContent = nk <= st.round.steps ? t('next') + ': ' + fmtMult(model.multCents(st.rtp, st.diff, nk, st.round.j)) : ''; }
+      else if (broke) $('goSub').textContent = Math.floor(st.balance / 100) < MIN_BET ? t('broke') : t('brokeLower');
+      else $('goSub').textContent = t('bet') + ' ' + st.bet + ' · ' + t('next') + ' ' + fmtMult(model.multCents(st.rtp, st.diff, 1, 0));
       $('goBtn').disabled = st.busy || broke;
-      $('goBtn').title = broke ? 'Not enough coins. Tap + for a free refill, or lower the bet.' : '';
+      $('goBtn').title = broke ? t('brokeTitle') : '';
       var canCash = active && st.round.k >= 1 && !st.busy;
       $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
       $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
@@ -308,14 +320,16 @@
       Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) { c.disabled = active || st.busy; });
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
+      var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
+      fillAuto();
     }
     function renderHistory() {
-      $('history').innerHTML = st.history.map(function (h) {
+      $('history').innerHTML = st.history.map(function (h, i) {
         var when = h.t ? new Date(h.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         var tail = (h.bet != null ? ' bet ' + h.bet : '') + (h.win ? ' +' + fmt(h.pay || 0) : '') + (when ? ' ' + when : '') + (h.id ? ' #' + String(h.id).slice(-4) : '');
-        return h.win ? '<span class="h w" title="' + tail + '">' + fmtMult(h.mult) + '<span class="d">' + h.d + tail + '</span></span>'
-                     : '<span class="h l" title="' + tail + '">LAVA<span class="d">' + h.d + ' @' + h.k + tail + '</span></span>';
-      }).join('') || '<span class="h">No rounds yet</span>';
+        return h.win ? '<span class="h w" data-i="' + i + '" title="' + tail + '">' + fmtMult(h.mult) + '<span class="d">' + h.d + tail + '</span></span>'
+                     : '<span class="h l" data-i="' + i + '" title="' + tail + '">LAVA<span class="d">' + h.d + ' @' + h.k + tail + '</span></span>';
+      }).join('') || '<span class="h">' + t('none') + '</span>';
     }
     function renderAll(lostAt) { renderControls(); renderLadder(lostAt); renderHud(); renderHistory(); renderInfo(); }
 
@@ -371,7 +385,7 @@
       var canCash = !!(st.round && st.round.k >= 1);
       $('goBtn').classList.toggle('nudge', l >= 1);
       $('cashBtn').classList.toggle('nudge', l >= 1 && canCash);
-      var hint = $('idleHint'); hint.textContent = canCash ? 'Step or take the gold?' : 'Take your first step!';
+      var hint = $('idleHint'); hint.textContent = canCash ? t('idleCash') : t('idleStep');
       hint.classList.toggle('show', l >= 2);
     }
     function clearIdle() { clearTimeout(idle.t1); clearTimeout(idle.t2); if (idle.level) setIdle(0); }
@@ -386,7 +400,7 @@
     function pushHistory(isWin, mult, k, round) {
       var r = round || {};
       st.history.unshift({ win: isWin, mult: mult, k: k, d: DIFF_TAG[st.diff] || st.diff[0].toUpperCase(),
-        bet: r.bet, pay: r.payoutCents || 0, id: r.id || '', j: r.j || 0, t: Date.now() });
+        bet: r.bet, pay: r.payoutCents || 0, id: r.id || '', j: r.j || 0, t: Date.now(), path: (r.path || []).slice(), steps: r.steps || 0 });
       st.history = st.history.slice(0, 20);
     }
 
@@ -421,7 +435,7 @@
         var lost = res.outcome === 'collapse', wonRound = null;
         if (lost) { st.round = null; st.last = res.round; st.rounds++; pushHistory(false, 0, k, res.round); save(); }
         else if (res.auto) wonRound = settleWin({ payoutCents: res.payoutCents, round: res.round }, res.auto);
-        else { st.round = res.round; save(); }
+        else { st.round = res.round; track('step', { id: res.round.id, k: res.round.k, outcome: res.outcome, mult: res.multCents }); save(); }
         var cPrev = C.circleOf(prevK, N), cNew = C.circleOf(k, N);
         return scene.jumpTo(k, res.outcome, {
           tension: tension,
@@ -447,9 +461,16 @@
           }
         }).then(function () {
           if (lost) {
-            banner('lose', 'INTO THE LAVA!', 'Slab ' + k + ' crumbled in ' + C.label(cNew) + ' &middot; bet ' + res.round.bet + ' lost', 2800);
+            banner('lose', t('lava'), t('lavaSub', { k: k, circle: C.label(cNew), bet: res.round.bet }), 2800);
             renderAll(k);
+            track('loss', { id: res.round && res.round.id, k: k, bet: res.round && res.round.bet });
             return;
+          }
+          if (!wonRound && st.autoOn && st.autoStep && res.round.k >= st.autoStep) {
+            return provider.cashOut().then(function (cr) { track('cashout', { id: cr.round.id, auto: 'target', k: cr.round.k }); var r = settleWin(cr, 'target'); return presentWin(r, cr.payoutCents, 'target'); });
+          }
+          if (!wonRound && cfg.maxWinX < model.cap && res.round.multCents >= Math.round(cfg.maxWinX * 100)) {
+            return provider.cashOut().then(function (cr) { track('cashout', { id: cr.round.id, auto: 'operator-cap', k: cr.round.k }); var r = settleWin(cr, 'cap'); return presentWin(r, cr.payoutCents, 'cap'); });
           }
           if (wonRound) return presentWin(wonRound, res.payoutCents, res.auto);
         });
@@ -459,10 +480,11 @@
     function onGo() {
       if (st.busy) return;
       if (st.round) return doStep();
-      if (st.bet * 100 > st.balance) { banner('info', 'NOT ENOUGH COINS', 'Lower the bet or tap + for free coins'); return; }
+      if (st.bet * 100 > st.balance) { banner('info', t('notEnough'), t('notEnoughSub')); return; }
       st.busy = true; hideWin(); hideBanner();
       provider.start({ bet: st.bet, difficulty: st.diff, rtp: st.rtp }).then(function (res) {
         st.balance -= st.bet * 100; shown = st.balance; st.round = res.round; st.last = null;
+        track('round_start', { id: res.round.id, bet: st.bet, diff: st.diff, rtp: st.rtp });
         resetScene(); save(); renderAll();
         st.busy = false;
         return doStep();
@@ -472,7 +494,7 @@
     function onCash() {
       if (st.busy || !st.round || st.round.k < 1) return;
       st.busy = true; clearIdle(); renderControls();
-      provider.cashOut().then(function (res) { var r = settleWin(res, null); return presentWin(r, res.payoutCents, null); })
+      provider.cashOut().then(function (res) { track('cashout', { id: res.round.id, k: res.round.k }); var r = settleWin(res, null); return presentWin(r, res.payoutCents, null); })
         .catch(function (e) { console.error(e); }).then(function () { st.busy = false; renderControls(); });
     }
 
@@ -491,7 +513,7 @@
     $('refillBtn').addEventListener('click', function () {
       if (st.round || st.busy || st.balance >= START_COINS * 100) return;
       var add = START_COINS * 100 - st.balance; st.balance = START_COINS * 100; save(); audio.refill();
-      banner('info', '+ FREE COINS', 'Balance refilled to ' + START_COINS + ' (virtual)');
+      banner('info', t('refill'), t('refillSub', { n: START_COINS }));
       flyCoins(add, 1); renderControls();
     });
     function openModal() { renderInfo(); clearIdle(); $('modal').classList.remove('hidden'); audio.click(); }
@@ -545,17 +567,59 @@
         renderAll(); armIdle();
       });
     }
+    function fillAuto() {
+      var row = $('autoRow'), sel = $('autoStep'); if (!row || !sel) return;
+      row.hidden = !cfg.autocash;
+      $('autoOn').checked = !!st.autoOn;
+      $('autoLabel').textContent = t('auto');
+      var n = model.steps(st.diff), html = '<option value="0">' + t('autoOff') + '</option>';
+      for (var i = 1; i <= n; i++) html += '<option value="' + i + '">' + i + '</option>';
+      if (sel.dataset.n !== String(n)) { sel.innerHTML = html; sel.dataset.n = String(n); }
+      sel.value = String(st.autoStep || 0);
+      sel.disabled = !!st.round || st.busy;
+      $('autoOn').disabled = !!st.round || st.busy;
+    }
+    if ($('autoOn')) $('autoOn').addEventListener('change', function (e) { st.autoOn = e.target.checked; if (st.autoOn && !st.autoStep) st.autoStep = 3; save(); renderControls(); });
+    if ($('autoStep')) $('autoStep').addEventListener('change', function (e) { st.autoStep = parseInt(e.target.value, 10) || 0; st.autoOn = st.autoStep > 0; save(); renderControls(); });
+    if (cfg.lobbyUrl && $('homeBtn')) { $('homeBtn').hidden = false; $('homeBtn').title = t('home'); $('homeBtn').addEventListener('click', function () { location.href = cfg.lobbyUrl; }); }
+    if ($('langPick')) { $('langPick').value = cfg.lang; $('langPick').addEventListener('change', function (e) { var u = new URL(location.href); u.searchParams.set('lang', e.target.value); location.href = u.href; }); }
+    if ($('modeNote')) $('modeNote').textContent = cfg.mode === 'real' ? t('real') : t('demo');
+    var help = $('deskHelp'); if (help) help.innerHTML = '<b>' + t('how') + '</b><p>' + t('how1') + '</p><p>' + t('how2') + '</p><p>' + t('how3') + '</p>';
+    var openRound = null;
+    function showRound(h) {
+      openRound = h; $('roundTitle').textContent = t('round') + (h.id ? ' ' + h.id : '');
+      $('roundBody').textContent = t('detail', { bet: h.bet != null ? h.bet : '?', result: h.win ? t('won', { amt: fmt(h.pay || 0) }) : t('lost', { amt: h.bet || 0 }), steps: h.k, j: Math.pow(2, h.j || 0) });
+      $('roundPath').textContent = (h.path || []).join(' · ') || '';
+      $('roundReplay').textContent = t('replay');
+      $('roundModal').classList.remove('hidden');
+    }
+    $('history').addEventListener('click', function (e) {
+      var chip = e.target.closest ? e.target.closest('.h') : null;
+      if (!chip || chip.dataset.i == null) return;
+      showRound(st.history[+chip.dataset.i]);
+    });
+    $('roundClose').addEventListener('click', function () { $('roundModal').classList.add('hidden'); });
+    $('roundModal').addEventListener('click', function (e) { if (e.target === $('roundModal')) $('roundModal').classList.add('hidden'); });
+    $('roundReplay').addEventListener('click', function () {
+      var h = openRound; if (!h || !h.path || st.busy || st.round) return;
+      $('roundModal').classList.add('hidden');
+      st.busy = true; renderControls(); resetScene();
+      var i = 0;
+      (function next() {
+        if (i >= h.path.length) { st.busy = false; renderControls(); return; }
+        var oc = h.path[i++]; scene.jumpTo(i, oc, {}).then(next);
+      })();
+    });
+    var replayId = qs.get('replay');
+    if (replayId) { var found = st.history.filter(function (h) { return h.id === replayId; })[0]; if (found) showRound(found); }
+
     renderAll();
     (function coach() {
       var el = $('coach'), text = $('coachText'), btn = $('coachNext');
       if (!el || qa || store.getItem('lavaRun.seenCoach')) return;
-      var tips = [
-        'Press GO to step onto the next slab. It can hold, or it can fall.',
-        'After the first safe step, CASH OUT takes the gold. Space steps, C cashes out.',
-        'A Golden Idol doubles the multiplier, and every slab after it.'
-      ];
+      var tips = [t('tip1'), t('tip2'), t('tip3')];
       var i = 0;
-      function show() { text.textContent = tips[i]; btn.textContent = i < tips.length - 1 ? 'Next' : 'Got it'; el.classList.remove('hidden'); }
+      function show() { text.textContent = tips[i]; btn.textContent = i < tips.length - 1 ? t('nextBtn') : t('gotIt'); el.classList.remove('hidden'); }
       function hide() { el.classList.add('hidden'); store.setItem('lavaRun.seenCoach', '1'); }
       btn.addEventListener('click', function () { i++; if (i >= tips.length) hide(); else show(); });
       $('goBtn').addEventListener('click', function () { if (!el.classList.contains('hidden')) hide(); });
@@ -568,6 +632,7 @@
       state: function () { return { balance: st.balance, shownBalance: shown, bet: st.bet, diff: st.diff, rtp: st.rtp, busy: st.busy, calm: st.calm, music: st.music, sfx: st.sfx,
         round: st.round ? JSON.parse(JSON.stringify(st.round)) : null, history: st.history.slice(), rounds: st.rounds, provider: provider.kind, rng: provider.rngName, qa: qa,
         circle: circleNow(), idleCue: idle.level }; },
+      events: function () { return window.LavaAnalytics ? window.LavaAnalytics.events() : []; },
       providerRound: function () { return provider.current(); },
       setTimeScale: function (v) { timeScale = v > 0 ? v : 1; scene.setTimeScale(timeScale); if (st.round && !st.busy) armIdle(); },
       sceneStats: function () { return scene.stats(); },
