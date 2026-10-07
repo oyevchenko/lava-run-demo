@@ -131,6 +131,7 @@
       sfx: typeof saved.sfx === 'boolean' ? saved.sfx : !legacyMute,
       calm: typeof saved.calm === 'boolean' ? saved.calm : !!reduceMq.matches,
       history: Array.isArray(saved.history) ? saved.history.slice(0, 20) : [],
+      autoStep: cfg.autocash ? (saved.autoStep || 0) : 0,
       round: null, last: null, busy: false, rounds: saved.rounds || 0
     };
     var shown = st.balance; // displayed balance (animated count-up toward st.balance)
@@ -138,7 +139,7 @@
     function save() {
       var r = provider.current();
       store.setItem(STORE_KEY, JSON.stringify({ balance: st.balance, bet: st.bet, diff: st.diff, rtp: st.rtp, music: st.music, sfx: st.sfx, calm: st.calm,
-        history: st.history, rounds: st.rounds, activeRound: r && r.status === 'active' ? r : null }));
+        history: st.history, rounds: st.rounds, autoStep: st.autoStep, activeRound: r && r.status === 'active' ? r : null }));
     }
 
     // ---------- settings ----------
@@ -320,6 +321,30 @@
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
       var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
+      renderAuto();
+    }
+    function renderAuto() {
+      var row = $('autoRow'); if (!row) return;
+      row.hidden = !cfg.autocash;
+      row.classList.toggle('locked', !!st.round || st.busy);
+      $('autoLabel').textContent = t('auto').split(' ')[0].toUpperCase();
+      var box = $('autoChips'), n = model.steps(st.diff);
+      var opts = [{ v: 0, l: t('autoOff') }, { v: 3, l: '3' }, { v: 5, l: '5' }, { v: 10, l: '10' }, { v: n, l: 'MAX' }];
+      var key = opts.map(function (o) { return o.v; }).join(',');
+      if (box.dataset.key !== key) {
+        box.innerHTML = '';
+        opts.forEach(function (o) {
+          if (o.v && o.v > n) return;
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.step = String(o.v); b.textContent = o.l;
+          b.addEventListener('click', function () {
+            if (st.round || st.busy) return;
+            st.autoStep = o.v; audio.click(); save(); renderAuto();
+          });
+          box.appendChild(b);
+        });
+        box.dataset.key = key;
+      }
+      Array.prototype.forEach.call(box.children, function (b) { b.classList.toggle('on', +b.dataset.step === (st.autoStep || 0)); });
     }
     function renderHistory() {
       $('history').innerHTML = st.history.map(function (h, i) {
@@ -462,6 +487,9 @@
             renderAll(k);
             track('loss', { id: res.round && res.round.id, k: k, bet: res.round && res.round.bet });
             return;
+          }
+          if (!wonRound && st.autoStep && res.round.k >= st.autoStep) {
+            return provider.cashOut().then(function (cr) { track('cashout', { id: cr.round.id, auto: 'target', k: cr.round.k }); var r = settleWin(cr, 'target'); return presentWin(r, cr.payoutCents, 'target'); });
           }
           if (wonRound) return presentWin(wonRound, res.payoutCents, res.auto);
         });
