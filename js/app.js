@@ -28,10 +28,54 @@
 
   loadTables().then(start).catch(function (e) { console.error(e); document.body.insertAdjacentHTML('beforeend', '<p style="color:#f88;padding:20px">Failed to load game data.</p>'); });
 
+  /** ?qa=1|all -> idols spread over every circle + no lose (the run always reaches the last slab);
+      ?qa=idols -> literally every slab an idol (reaches the MAX WIN cap early); ?qa=nolose -> safe slabs only;
+      &lose=N forces a collapse on step N (loss / fall / soot preview) */
+  function parseQa(qs) {
+    if (!qs.has('qa')) return null;
+    var v = (qs.get('qa') || '1').toLowerCase(), all = v === '1' || v === 'all' || v === 'true' || v === '';
+    var o = { mode: all ? 'all' : /idol/.test(v) && /nolose/.test(v) ? 'idols' : /idol/.test(v) ? 'idols' : /nolose/.test(v) ? 'nolose' : 'all',
+              lose: Math.max(0, parseInt(qs.get('lose'), 10) || 0) };
+    o.idols = o.mode !== 'nolose'; o.nolose = true;
+    return o;
+  }
+  /** QA rng: only step draws are forced (idol / safe, or a collapse on step `lose`); other draws (round ids) stay random.
+      'all': J = the most idols the run can hold without hitting the max-win cap before the last slab, spread evenly
+      over the run, so every circle, title card, idol reveal and (by cashing out earlier or later) every win tier shows. */
+  function QaRng(model, round, o) {
+    var real = LavaRng.CryptoRng(), planFor = {};
+    function plan(r) {
+      var key = r.difficulty + '/' + r.rtp; if (planFor[key] != null) return planFor[key];
+      var N = model.steps(r.difficulty), J = 0;
+      while (J < N && !model.isCap(model.multCents(r.rtp, r.difficulty, N, J + 1))) J++;
+      return (planFor[key] = J);
+    }
+    return {
+      name: 'QA MODE (forced outcomes, not random)',
+      int: function (n) {
+        if (n !== model.raw.rngScale) return real.int(n);
+        var r = round(), d = r && model.difficulties[r.difficulty];
+        if (!d) return real.int(n);
+        var step = r.k + 1, N = model.steps(r.difficulty), IDOL = d.collapseThreshold, SAFE = n - 1; // collapse <= r < idol -> idol
+        if (o.lose && step === o.lose) return 0;                                                   // r < collapse -> collapse
+        if (!o.idols || !(d.idolThreshold > d.collapseThreshold)) return SAFE;
+        if (o.mode === 'idols') return IDOL;
+        var J = plan(r); return Math.floor(step * J / N) > Math.floor((step - 1) * J / N) ? IDOL : SAFE;
+      }
+    };
+  }
+
   function start(tables) {
     var qs = new URLSearchParams(location.search), qParam = qs.has('quality') ? Math.max(0, Math.min(2, parseInt(qs.get('quality'), 10) || 0)) : null;
     var model = LavaEngine.LavaModel(tables);
-    var provider = LavaEngine.LocalRoundProvider(model, LavaRng.CryptoRng());
+    // ---- QA test mode (?qa=1, ?qa=nolose, ?qa=idols, ?qa=1&lose=N): forced outcomes so every animation, idol, circle
+    // and win tier can be reviewed. It only swaps the RNG fed to the unchanged LocalRoundProvider (engine.js, tables and
+    // RTP untouched), keeps its own wallet (separate storage key) and shows a QA MODE badge. Without ?qa nothing changes.
+    var qa = parseQa(qs);
+    if (qa) STORE_KEY += '.qa';
+    var provider = LavaEngine.LocalRoundProvider(model, qa ? QaRng(model, function () { return provider.current(); }, qa) : LavaRng.CryptoRng());
+    if (qa) { document.documentElement.classList.add('qa'); var qb = document.createElement('div'); qb.id = 'qaBadge'; qb.title = 'QA test mode: forced outcomes, separate wallet. Not real play.';
+      qb.textContent = 'QA MODE' + (qa.mode === 'idols' ? ' \u00b7 ALL IDOLS' : qa.mode === 'nolose' ? ' \u00b7 NO LOSE' : '') + (qa.lose ? ' \u00b7 LOSE @' + qa.lose : ''); ($('stage') || document.body).appendChild(qb); }
     var assets = LavaAssets(window.LAVA_ASSET_MANIFEST, {});
     var audio = LavaAudio(assets);
     // splash with the painted logo until the bitmaps are in (purely visual, never blocks input)
@@ -450,7 +494,7 @@
     window.__lavaRun = {
       ready: true,
       state: function () { return { balance: st.balance, shownBalance: shown, bet: st.bet, diff: st.diff, rtp: st.rtp, busy: st.busy, calm: st.calm, music: st.music, sfx: st.sfx,
-        round: st.round ? JSON.parse(JSON.stringify(st.round)) : null, history: st.history.slice(), rounds: st.rounds, provider: provider.kind, rng: provider.rngName,
+        round: st.round ? JSON.parse(JSON.stringify(st.round)) : null, history: st.history.slice(), rounds: st.rounds, provider: provider.kind, rng: provider.rngName, qa: qa,
         circle: circleNow(), idleCue: idle.level }; },
       providerRound: function () { return provider.current(); },
       setTimeScale: function (v) { timeScale = v > 0 ? v : 1; scene.setTimeScale(timeScale); if (st.round && !st.busy) armIdle(); },

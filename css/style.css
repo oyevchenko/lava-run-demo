@@ -425,3 +425,8 @@ html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:
 html.desk .ladder .rung{width:66px;height:46px}
 html.desk .ladder .rung .m{font-size:16px}
 html.desk #app{grid-template-columns:minmax(0,1fr) 380px}
+
+/* QA test mode badge (?qa=...): always visible in the scene so QA play is never confused with real play */
+#qaBadge{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:5;pointer-events:none;white-space:nowrap;
+  font:12px/1 'Lilita One',sans-serif;letter-spacing:1.5px;color:#1a0a00;background:repeating-linear-gradient(-45deg,#ffd23c 0 10px,#ffb000 10px 20px);
+  padding:5px 10px;border-radius:8px;border:2px solid #1a0a00;box-shadow:0 2px 8px rgba(0,0,0,.6)}

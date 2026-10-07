@@ -36,7 +36,7 @@
     var N = 24, ladder = [], idolCount = 0, slabs = [], borders = [];
     var camZ = 0, camX = 0, camZTarget = 0;
     var hero = { z: 0, x: 0, hop: 0, pose: 'hero_idle', sx: 1, sy: 1, rot: 0, alpha: 1, visible: true, flip: 1, anim: null, idleSince: 0, blinkAt: 2, blinkUntil: 0, personality: null, sink: 0, bubble: null, lastPose: '', poseT0: 0, clip: null, waved: false, sooty: null };
-    var diffId = 'normal', heroDrawn = '';
+    var diffId = 'normal', heroDrawn = '', heroFoot = null, slabTops = {};
     var parts = [], amb = [], motes = [], floaters = [], fxParts = [], timers = [], erupts = [];
     var shake = 0, flash = { a: 0, c: '255,220,140' }, rays = null, desat = 0, glowPulse = 0;
     var circleNow = 0, circleFrom = 0, circleFade = 1;
@@ -87,6 +87,11 @@
     function zoomed(p) { return { x: zoomFocus.x + (p.x - zoomFocus.x) * zoom, y: zoomFocus.y + (p.y - zoomFocus.y) * zoom }; }
     function zoneCircle(z) { var k = Math.round(z / S); if (k <= 0) return 0; return C.circleOf(Math.min(k, N), N); }
     function slabX(i) { if (i <= 0) return 0; return Math.sin(i * 2.15 + 0.7) * 70 * (i % 3 === 0 ? 0.55 : 1); }
+    /** THE place the hero stands on slab k (world space): the slab's anchor = the centre of its top face (rotation and scale
+     *  of the slab variants pivot on it). Used by setup/restore, the jump target, the landing, the soot return and every frame
+     *  while he isn't airborne, so his resting position can never drift from the slab he is on. */
+    function standOn(k) { return { z: k * S, x: slabX(k) }; }
+    function placeHero(k) { var sp = standOn(k); hero.z = sp.z; hero.x = sp.x; return sp; }
     function depthAlpha(d) { var a = 1; if (d < -0.12 * S) a = clamp(1 + (d + 0.12 * S) / (0.42 * S), 0, 1); if (d > 7 * S) a *= clamp(1 - (d - 7 * S) / (3.5 * S), 0, 1); return a; }
     function addGlow(col, x, y, w, h, a) { if (a <= 0.004 || w < 1) return; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(A.glow(col, 64), x - w / 2, y - h / 2, w, h); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
 
@@ -95,7 +100,7 @@
       N = steps; ladder = newLadder.slice(); idolCount = j || 0;
       slabs = []; var first = C.firstSteps(N); borders = []; for (var b = 0; b < 9; b++) borders.push(first[b] != null ? (first[b] - 0.5) * S : null);
       for (var i = 0; i <= N; i++) slabs.push({ state: i === 0 ? 'passed' : 'idle', idol: false, idolT: -1, frags: null, wob: 0, crackT: -1, ring: -1, ringK: 0, runeT: -1 });
-      hero.z = 0; hero.x = 0; hero.hop = 0; hero.anim = null; hero.pose = 'hero_idle'; hero.visible = true; hero.alpha = 1; hero.sink = 0; hero.rot = 0; hero.sx = hero.sy = 1; hero.bubble = null; hero.idleSince = t; hero.clip = null; hero.sooty = null;
+      placeHero(0); hero.hop = 0; hero.anim = null; hero.pose = 'hero_idle'; hero.visible = true; hero.alpha = 1; hero.sink = 0; hero.rot = 0; hero.sx = hero.sy = 1; hero.bubble = null; hero.idleSince = t; hero.clip = null; hero.sooty = null;
       if (!hero.waved) { hero.waved = true; hero.clip = { name: 'hero_wave', t0: t + 0.35, rate: 1, wait: 3 }; } // hello on load / first round
       camZ = camZTarget = 0; camX = 0; rays = null; floaters = []; parts = []; desat = 0; zoomTarget = 1; collapseHot = null;
       setStreak(0);
@@ -105,7 +110,7 @@
     function restore(k, path) {
       var kk = 0;
       for (var i = 0; i < path.length; i++) { if (path[i] === 'collapse') break; kk++; slabs[kk].state = 'passed'; slabs[kk].runeT = -99; if (path[i] === 'idol') { slabs[kk].idol = true; slabs[kk].idolT = -99; } }
-      hero.z = k * S; hero.x = slabX(k); camZ = camZTarget = hero.z; camX = hero.x * 0.35;
+      placeHero(k); camZ = camZTarget = hero.z; camX = hero.x * 0.35;
       setCircle(C.circleOf(k, N), true); setStreak(k);
     }
     function setCircle(c, instant) {
@@ -130,7 +135,7 @@
     function jumpTo(k, outcome, o) {
       o = o || {};
       setIdleCue(0); if (peek) peek = null;
-      var tension = o.tension || 0, from = { z: hero.z, x: hero.x }, to = { z: k * S, x: slabX(k) };
+      var tension = o.tension || 0, from = { z: hero.z, x: hero.x }, to = standOn(k);
       hero.flip = to.x >= from.x ? 1 : -1;
       return new Promise(function (resolve) {
         var pre = 0.09, dur = 0.44, jm = animReady('hero_jump') ? assets.animMeta('hero_jump') : null;
@@ -145,7 +150,7 @@
         hero.anim = { type: 'jump', t0: t, from: from, to: to, dur: dur, pre: pre, clip: !!jm };
         after(Math.round((pre + dur) * 1000) + 1, function () { // landed
           var jumpClip = hero.clip && hero.clip.name === 'hero_jump' ? hero.clip : null;
-          hero.anim = { type: 'land', t0: t, clip: !!jumpClip }; hero.z = to.z;
+          hero.anim = { type: 'land', t0: t, clip: !!jumpClip }; placeHero(k); hero.hop = 0; // == the end of the airborne tween (to)
           if (jumpClip) { // this is the clip's landFrame: thud. After it the clip lowers the arms and ends on hero_idle frame 0,
             // so it flows straight into the idle loop. The post-landing part plays faster so the arms-up landing pose is brief
             // and the hero is back to standing ~1.5 s after touchdown; a STEP tap during it starts the next jump at once.
@@ -213,7 +218,7 @@
           impReact('giggle', 2.2);
           after(420, function () { hero.bubble = { t0: t, z: k * S, x: slabX(k) }; hero.pose = 'hero_soot'; });
           // with the soot clip: after the bubble pops the sooty hero is back on the last safe slab until the next round
-          after(2100, function () { if (hero.pose === 'hero_soot' && animReady('hero_soot')) { var kb = Math.max(0, k - 1); hero.sooty = { t0: t }; hero.anim = null; hero.clip = null; hero.z = kb * S; hero.x = slabX(kb); smokePuff(hero.z, hero.x); } });
+          after(2100, function () { if (hero.pose === 'hero_soot' && animReady('hero_soot')) { var kb = Math.max(0, k - 1); hero.sooty = { t0: t }; hero.anim = null; hero.clip = null; placeHero(kb); smokePuff(hero.z, hero.x); } });
           after(520, resolve);
         });
       });
@@ -601,6 +606,7 @@
       if (quality >= 1 && i > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.45 * al; var gl = A.glow(A.palette(c).glow, 64), gw = 230 * p.s * K; ctx.drawImage(gl, p.x - gw / 2, p.y - gw * 0.18, gw, gw * 0.62); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
       if (s.state === 'collapsed') { drawFrags(s, p, sc, c, al, i); return; }
       if (i === 0) {
+        slabTops[0] = { x: p.x, y: p.y, ax: p.x, ay: p.y };
         if (assets.isFallback('gate_dais') && !assets.isFallback('slab_marble')) sprite('slab_marble', p.x, p.y, SLAB * 1.45 * p.s * K, { alpha: al, tint: ['#ffcf70', 0.1] });
         else sprite('gate_dais', p.x, p.y, 0.4 * p.s * K, { alpha: al });
         return;
@@ -610,6 +616,8 @@
       var vim = slabImg(c, i, cracked);
       sprite(name, p.x + jx, p.y + jy, sc, { alpha: al, img: vim || null, tint: vim ? null : circleTint(c), rot: look.rot + wrot, noAnim: true });
       var ex = p.x + jx + (tf ? (tf[0] - sm.w * sm.anchor[0]) * sc : 0), ey = p.y + jy + (tf ? (tf[1] - sm.h * sm.anchor[1]) * sc : 0);
+      var fdx = tf ? (tf[0] - sm.w * sm.anchor[0]) * sc : 0, fdy = tf ? (tf[1] - sm.h * sm.anchor[1]) * sc : 0, cr = Math.cos(look.rot), sr = Math.sin(look.rot);
+      slabTops[i] = { x: p.x + fdx * cr - fdy * sr, y: p.y + fdx * sr + fdy * cr, ax: p.x, ay: p.y };
       var erx = tf ? tf[2] * 0.9 * sc : 82 * p.s * K, ery = tf ? tf[3] * 0.9 * sc : 46 * p.s * K;
       var k = Math.round(hero.z / S), isNext = i === k + 1 && !hero.bubble && hero.anim && hero.anim.type !== 'fall', onIt = i === k && !(hero.anim && hero.anim.type === 'jump');
       if (i === k + 1 && !hero.anim) isNext = true;
@@ -758,6 +766,7 @@
     }
     function drawHero() {
       if (!hero.visible) return;
+      if (!(hero.anim && hero.anim.type === 'jump')) placeHero(Math.round(hero.z / S)); // resting (incl. fall start, soot, win...) = on the slab
       var an = hero.anim, el = an ? t - an.t0 : 0, sx = 1, sy = 1, rot = 0, hop = 0, z = hero.z, x = hero.x, alpha = 1, sink = 0, pose = hero.pose;
       // one-shot clips (wave / jump / win / idol / fall) override the pose while they play
       var clip = hero.clip, clipOn = false;
@@ -811,7 +820,7 @@
         drawAura(p.x, y, p.s * K, alpha);
         var so = { sx: sx, sy: sy, rot: rot, flip: hero.flip, alpha: alpha, t0: st0, rate: srate };
         var cell = sprite(pose, p.x, y, sc, so);
-        heroDrawn = cell ? pose + '#' + cell.idx : pose;
+        heroDrawn = cell ? pose + '#' + cell.idx : pose; heroFoot = { x: p.x, y: y, k: Math.round(z / S), phase: an ? an.type : (clipOn ? clip.name : 'rest'), air: !!(an && an.type === 'jump'), t: t };
         // lava underlight: warm light from below on the hero (from the circle's glow colour)
         if (quality >= 1 && assets.underlit && !cell) {
           var zc = zoneCircle(z), ul = assets.underlit(pose, A.palette(zc === 9 ? 9 : zc).glow), fl0 = 0.85 + 0.15 * Math.sin(t * 3.1) * Math.sin(t * 4.7);
@@ -1031,7 +1040,7 @@
         ctx.globalAlpha = 1;
       }
       drawPortal();
-      var list = collect();
+      slabTops = {}; var list = collect();
       for (var i = 0; i < list.length; i++) list[i].f(list[i]);
       ageRays(dt);
       drawParts(dt);
@@ -1076,7 +1085,7 @@
       setQuality: function (q) { forcedQuality = q; if (q != null) { quality = q; resize(); } },
       circle: function () { return circleNow; },
       eruptNow: function () { spawnEruption(true); },
-      stats: function () { return { hero: heroDrawn, fps: Math.round(fps), frameMs: Math.round(frameMs * 10) / 10, quality: quality, dpr: dpr, gl: !!(lavaGL && lavaGL.ok() && glState === 'on'), t: Math.round(t * 1000) / 1000, anticipation: zoomTarget > 1, revealAt: lastReveal, flare: !!flare, eruption: !!collapseHot, portal: !!portal, slow: Math.round(slow * 100) / 100, erupts: erupts.length, aura: aura, zoom: Math.round(zoom * 1000) / 1000, particles: parts.length + fxParts.length, circle: circleNow, size: [Math.round(W), Math.round(H)] }; }
+      stats: function () { return { heroFoot: heroFoot, slabTops: slabTops, hero: heroDrawn, fps: Math.round(fps), frameMs: Math.round(frameMs * 10) / 10, quality: quality, dpr: dpr, gl: !!(lavaGL && lavaGL.ok() && glState === 'on'), t: Math.round(t * 1000) / 1000, anticipation: zoomTarget > 1, revealAt: lastReveal, flare: !!flare, eruption: !!collapseHot, portal: !!portal, slow: Math.round(slow * 100) / 100, erupts: erupts.length, aura: aura, zoom: Math.round(zoom * 1000) / 1000, particles: parts.length + fxParts.length, circle: circleNow, size: [Math.round(W), Math.round(H)] }; }
     };
   }
   root.LavaScene = Scene;
