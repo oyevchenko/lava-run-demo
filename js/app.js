@@ -170,7 +170,13 @@
     model.difficultyIds.forEach(function (id) {
       var b = document.createElement('button'); b.dataset.d = id; b.setAttribute('role', 'tab');
       b.innerHTML = '<svg><use href="#i-' + (ICON[id] || 'flame') + '"/></svg><span>' + model.difficulties[id].label + '</span>';
-      b.addEventListener('click', function () { if (st.round || st.busy) return; audio.click(); st.diff = id; st.last = null; hideBanner(); hideWin(); resetScene(); renderAll(); save(); });
+      b.addEventListener('click', function () {
+        if (st.round || st.busy) return;
+        audio.click(); st.diff = id; st.last = null;
+        var n = model.steps(id), prev = st.autoStep;
+        if (cfg.stake && prev > n) { st.autoStep = n; banner('info', t('slabFit'), t('slabFitSub', { n: n })); }
+        hideWin(); resetScene(); renderAll(); save();
+      });
       seg.appendChild(b);
     });
     var rseg = $('rtpSeg');
@@ -255,7 +261,7 @@
     function showNext(cents) {
       var el = $('hudNext'); if (!el) return;
       if (cents == null) { el.hidden = true; return; }
-      el.hidden = false; el.textContent = t('next') + ' ' + fmtMult(cents);
+      el.hidden = false; el.textContent = t('next').toUpperCase() + ' ' + fmtMult(cents);
     }
     function renderBalance() { $('balance').textContent = fmt(shown); }
     // multiplier counter: holds the old value until the sparks from the slab arrive, then rolls the digits up with a flash
@@ -343,7 +349,7 @@
       row.hidden = !cfg.stake;
       if (!cfg.stake) return;
       var n = model.steps(st.diff);
-      if (!st.autoStep || st.autoStep > n) st.autoStep = Math.min(5, n);
+      if (!st.autoStep || st.autoStep > n) st.autoStep = n;
       $('slabLabel').textContent = t('pickSlab');
       $('slabCap').textContent = t('slab');
       $('slabVal').textContent = String(st.autoStep);
@@ -534,7 +540,7 @@
           }
           if (wonRound) return presentWin(wonRound, res.payoutCents, res.auto);
         });
-      }).catch(function (e) { console.error(e); }).then(function () {
+      }).catch(function (e) { banner('info', t('fault'), t('faultSub')); console.error(e); }).then(function () {
         if (stakeRun && st.round && st.round.status === 'active') return doStep();
         stakeRun = false; st.busy = false; renderControls(); armIdle();
       });
@@ -545,6 +551,7 @@
       if (st.busy) return;
       if (st.round) return doStep();
       if (cfg.stake && !st.autoStep) { banner('info', t('pick'), t('stake')); return; }
+      if (cfg.stake && st.autoStep > model.steps(st.diff)) { st.autoStep = model.steps(st.diff); banner('info', t('slabFit'), t('slabFitSub', { n: st.autoStep })); renderControls(); return; }
       if (st.bet * 100 > st.balance) { banner('info', t('notEnough'), t('notEnoughSub')); return; }
       st.busy = true; hideWin(); hideBanner();
       provider.start({ bet: st.bet, difficulty: st.diff, rtp: st.rtp }).then(function (res) {
@@ -554,7 +561,7 @@
         st.busy = false;
         stakeRun = !!cfg.stake;
         return doStep();
-      }).catch(function (e) { st.busy = false; console.error(e); renderControls(); });
+      }).catch(function (e) { st.busy = false; banner('info', t('fault'), t('faultSub')); console.error(e); renderControls(); });
     }
 
     function onCash() {

@@ -51,17 +51,17 @@ svg{width:100%;height:100%;display:block}
 #scene{position:absolute;inset:0;width:100%;height:100%;display:block}
 .fx{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:40}
 .hud{position:absolute;left:0;right:0;top:6px;padding:0 8px;pointer-events:none;z-index:3}
-.plaque{position:relative;display:flex;align-items:center;height:66px;border-radius:14px;padding:0 6px;
+.plaque{position:relative;display:flex;align-items:center;height:84px;border-radius:14px;padding:0 6px;
   background:linear-gradient(#d23149,#94192f);border:3px solid #f6c445;box-shadow:0 4px 0 #6a3a08,0 8px 18px rgba(0,0,0,.45),0 0 22px rgba(255,200,60,.35)}
 .plaque:before{content:'';position:absolute;left:62px;right:62px;bottom:3px;height:8px;background:var(--meander) repeat-x center/auto 8px;opacity:.55}
 .has-ui-plaque .plaque{background:none;border:0;box-shadow:none;border-image:var(--img-ui-plaque) 60 fill / 22px stretch}
-.medal{flex:0 0 52px;height:52px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+.medal{flex:0 0 64px;height:64px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:radial-gradient(circle at 40% 30%,#ffe9a0,#e9a21e 60%,#a8650c);box-shadow:inset 0 0 0 3px #fff2b0,inset 0 -3px 0 3px #a8650c,0 2px 0 #4a0d16;color:#fff;font-family:'Lilita One',sans-serif}
 .has-ui-medallion .medal{background:var(--img-ui-medallion) center/contain no-repeat;box-shadow:none}
 .medal-l span{font:900 21px/1 'Cinzel',serif;--sw:4px;--so:#7a3f05}
 .medal-l.gate span{font-size:22px}
 .medal-r small{font-size:9px;letter-spacing:1px;color:#7a3f05;line-height:1;margin-top:2px}
-.medal-r span{font-size:16px;line-height:1;--sw:3.5px;--so:#7a3f05}
+.medal-r span{font-size:15px;line-height:1;--sw:2.5px;--so:#7a3f05;letter-spacing:-.3px}
 .plaque-mid{flex:1;text-align:center;min-width:0}
 .mult{font:40px/1 'Lilita One',sans-serif;color:#fff;--sw:6px;--so:#5a1a10;text-shadow:0 3px 0 #3a0c08;font-variant-numeric:tabular-nums;display:inline-block}
 .mult.pop{animation:pop .42s cubic-bezier(.2,1.6,.4,1)}
@@ -249,7 +249,7 @@ svg{width:100%;height:100%;display:block}
 }
 
 /* ---------- small phones ---------- */
-@media (max-height:700px){ .history-wrap{min-height:28px;padding:3px 8px} .history-title{display:none} .main-btns{height:64px} .plaque{height:58px} .mult{font-size:34px} .medal{flex-basis:46px;height:46px} }
+@media (max-height:700px){ .history-wrap{min-height:22px;padding:2px 8px} .history-title{display:none} .main-btns{height:64px} .plaque{height:76px} .mult{font-size:34px} .medal{flex-basis:58px;height:58px} }
 @media (max-width:360px){ .logo{width:78px}.logo-word{font-size:18px} #balance{font-size:16px} .ib{width:30px;height:30px;padding:6px} .seg button svg{display:none} }
 
 /* ---------- desktop: stage left, control column right ---------- */
@@ -346,7 +346,7 @@ html.stake .main-btns .btn-go{flex:1}
 .has-ui-icon-btn .ib.off{background:var(--img-ui-icon-btn) center/contain no-repeat;box-shadow:none;filter:grayscale(.9) brightness(.7) drop-shadow(0 2px 2px rgba(0,0,0,.5))}
 /* chunkier 3D numbers */
 .mult{color:#fffaf0;text-shadow:0 2px 0 #e08a1a,0 4px 0 #a8500c,0 6px 0 #5a1a06,0 9px 10px rgba(0,0,0,.55)}
-.hud-next{font:12px/1 'Lilita One',sans-serif;letter-spacing:.4px;color:#ffe9a8;margin-top:1px;-webkit-text-stroke:2.5px #5a1a10;paint-order:stroke fill}
+.hud-next{font:13px/1 'Lilita One',sans-serif;letter-spacing:.6px;color:#ffe9a8;margin-top:2px;-webkit-text-stroke:2.5px #5a1a10;paint-order:stroke fill}
 .hud-next[hidden]{display:none}
 .btn span{text-shadow:0 3px 0 var(--o),0 6px 7px rgba(0,0,0,.35)}
 .balance #balance{text-shadow:0 2px 0 #5a1a06,0 4px 5px rgba(0,0,0,.4)}
@@ -363,7 +363,7 @@ html.stake .main-btns .btn-go{flex:1}
 /* ===================== Inferno polish (fix list 2026-10) ===================== */
 /* 1) HUD: high-contrast labels everywhere */
 .medal-r small{font:11px/1 'Lilita One',sans-serif;letter-spacing:1.2px;color:#fff;-webkit-text-stroke:3px #5a2404;paint-order:stroke fill;text-shadow:0 1px 0 #3a1404;margin:0 0 1px}
-.medal-r span{color:#fff;--sw:4px;--so:#5a2404;font-size:17px}
+.medal-r span{color:#fff;--sw:3px;--so:#5a2404;font-size:15px;letter-spacing:-.4px}
 .descent .pip{font:900 9.5px/17px 'Cinzel',serif;color:#fff1dc;background:#2a0a12;border:1.5px solid rgba(255,214,110,.85);text-shadow:0 1px 0 #000;box-shadow:0 1px 3px rgba(0,0,0,.6)}
 .descent .pip.done{color:#5a2404;text-shadow:none}
 .rung .n{font-size:10px;color:#7a4418}.rung.done .n,.rung.lost .n{color:#fff}.rung.next .n{color:#8a3a10}
@@ -462,7 +462,7 @@ html.desk #frameDeco:before,html.desk #frameDeco:after{content:'';position:absol
 html.desk #frameDeco:before{top:-26px}html.desk #frameDeco:after{bottom:-26px}
 html.desk #frameDeco i{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffb0a0,#d0203a 45%,#6a0814 80%);box-shadow:0 0 0 3px #ffd96a,0 0 0 5px #7a4a10,0 0 14px rgba(255,80,60,.8)}
 html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:nth-child(2){right:-19px;top:-19px}html.desk #frameDeco i:nth-child(3){left:-19px;bottom:-19px}html.desk #frameDeco i:nth-child(4){right:-19px;bottom:-19px}
-html.desk .ladder-wrap{order:1;flex:0 1 auto;max-height:46%}
+html.desk .ladder-wrap{order:1;flex:1 1 auto;max-height:none;min-height:0}
 .slab-row{display:flex;align-items:center;gap:6px;margin-top:8px}
 .slab-row[hidden]{display:none}
 .slab-row .bet-box{flex:1;height:48px}
@@ -479,7 +479,7 @@ html.desk .desk-help.open .desk-toggle:after{content:'–'}
 html.desk .desk-body{padding:8px 12px 10px;font:13px/1.35 'Lilita One',sans-serif;color:#6a2a1a}
 html.desk .desk-body p{margin:3px 0}
 html.desk .desk-body[hidden]{display:none}
-html.desk .history-wrap{order:3;flex:1 1 auto;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
+html.desk .history-wrap{order:3;flex:0 0 auto;max-height:88px;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
 html.desk .history{flex-direction:column;overflow:auto}
 html.desk .controls{order:4}
 html.desk .footer{order:5}
