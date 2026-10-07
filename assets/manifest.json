@@ -131,7 +131,7 @@
     0.3875
    ],
    "group": "Path",
-   "src": "img/slab_marble.png",
+   "src": "img/slab_marble.webp",
    "medallion": [
     200,
     124,
@@ -154,7 +154,7 @@
     0.3875
    ],
    "group": "Path",
-   "src": "img/slab_cracked.png",
+   "src": "img/slab_cracked.webp",
    "medallion": [
     200,
     124,
@@ -835,6 +835,254 @@
    "src": null,
    "license": null,
    "source": "generative WebAudio score (js/audio.js)"
+  }
+ },
+ "anims": {
+  "hero_fall": {
+   "fps": 12,
+   "loop": false,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 6,
+   "rows": 4,
+   "frames": 23,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_fall/",
+   "sheets": [
+    "sheet0.webp"
+   ],
+   "exitFrame": 19
+  },
+  "hero_idle": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 6,
+   "frames": 45,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_idle/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_idol": {
+   "fps": 12,
+   "loop": false,
+   "holdLast": true,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 7,
+   "frames": 51,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_idol/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_impatient": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 6,
+   "frames": 42,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_impatient/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_jump": {
+   "fps": 12,
+   "loop": false,
+   "holdLast": true,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 7,
+   "rows": 5,
+   "frames": 29,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_jump/",
+   "sheets": [
+    "sheet0.webp"
+   ],
+   "airborne": [
+    15,
+    20
+   ],
+   "landFrame": 21
+  },
+  "hero_nervous": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 9,
+   "rows": 6,
+   "frames": 54,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_nervous/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_soot": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 6,
+   "frames": 45,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_soot/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_wave": {
+   "fps": 12,
+   "loop": false,
+   "holdLast": false,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 6,
+   "frames": 48,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_wave/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "hero_win": {
+   "fps": 12,
+   "loop": false,
+   "holdLast": true,
+   "frameW": 384,
+   "frameH": 480,
+   "cols": 8,
+   "rows": 6,
+   "frames": 44,
+   "anchor": [
+    0.5,
+    0.95
+   ],
+   "w": 792,
+   "h": 990,
+   "dir": "anim/hero_win/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "imp_cheer": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 256,
+   "frameH": 256,
+   "cols": 7,
+   "rows": 7,
+   "frames": 47,
+   "anchor": [
+    0.5,
+    1
+   ],
+   "w": 196,
+   "h": 196,
+   "dir": "anim/imp_cheer/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "imp_giggle": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 256,
+   "frameH": 256,
+   "cols": 8,
+   "rows": 7,
+   "frames": 51,
+   "anchor": [
+    0.5,
+    1
+   ],
+   "w": 196,
+   "h": 196,
+   "dir": "anim/imp_giggle/",
+   "sheets": [
+    "sheet0.webp"
+   ]
+  },
+  "imp_idle": {
+   "fps": 12,
+   "loop": true,
+   "holdLast": false,
+   "frameW": 256,
+   "frameH": 256,
+   "cols": 7,
+   "rows": 7,
+   "frames": 47,
+   "anchor": [
+    0.5,
+    1
+   ],
+   "w": 196,
+   "h": 196,
+   "dir": "anim/imp_idle/",
+   "sheets": [
+    "sheet0.webp"
+   ]
   }
  }
 }

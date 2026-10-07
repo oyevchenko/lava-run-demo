@@ -1,0 +1,20 @@
+{
+ "name": "hero_idol",
+ "fps": 12,
+ "loop": false,
+ "holdLast": true,
+ "frameW": 384,
+ "frameH": 480,
+ "cols": 8,
+ "rows": 7,
+ "frames": 51,
+ "anchor": [
+  0.5,
+  0.95
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "charH": 273,
+ "drawScale": 2.0623
+}

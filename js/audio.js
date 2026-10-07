@@ -14,7 +14,7 @@
   function LavaAudio(assets) {
     var ac = null, master, comp, musicBus, musicFilter, sfxBus, revIn, revOut, musicOn = true, sfxOn = true;
     var buf = {}, inst = {}, started = false, level = 0, targetLevel = 0, circle = 0, schedTimer = null, nextTime = 0, stepIdx = 0, bar = 0, cycle = 0;
-    var lastCoin = 0, lastTick = 0, ambNodes = null, unlocked = false;
+    var lastCoin = 0, lastTick = 0, lastBubble = 0, lastReel = 0, ambNodes = null, unlocked = false, streak = 0;
 
     // ---------- graph ----------
     function ensure() {
@@ -121,7 +121,8 @@
       if (stems || buf.music_base) { if (!stems) startStems(); if (level !== targetLevel) applyLevel(); var sg = stemGains(); stems.forEach(function (g, i) { if (g) g.gain.setTargetAtTime(sg[i], ac.currentTime, 1.5); }); return; }
       while (nextTime < ac.currentTime + 0.15) { playStep(stepIdx, nextTime); var spb = 60 / BPM[level] / 4; nextTime += spb; stepIdx++; if (stepIdx >= 16) { stepIdx = 0; bar = (bar + 1) % 8; if (bar === 0) cycle++; if (level !== targetLevel) applyLevel(); } }
     }
-    function applyLevel() { level = targetLevel; musicFilter.frequency.setTargetAtTime(CUTOFF[level], ac.currentTime, 0.8); }
+    function applyLevel() { level = targetLevel; applyCutoff(); }
+    function applyCutoff() { if (musicFilter) musicFilter.frequency.setTargetAtTime(CUTOFF[level] + streak * 450, ac.currentTime, 0.8); }
     function playStep(s, when) {
       var deep = level >= 7, prog = deep ? PROG_DEEP : PROG, ch = prog[bar], tones = CH[ch], ext = [tones[0], tones[1], tones[2], tones[0] + 12, tones[1] + 12], spb = 60 / BPM[level] / 4;
       // pad (once per bar)
@@ -138,6 +139,11 @@
       // frame drum (maqsum) + shaker
       if (level >= 3) { if (s === 0 || s === 8) play(inst.doum, when, 1, 0.5, musicBus, 0.1); if (s === 2 || s === 6 || s === 12) play(inst.tek, when, 1, 0.32, musicBus, 0.25); if (level >= 6 && (s === 4 || s === 10 || s === 15)) play(inst.tek, when, 1.1, 0.14, musicBus, -0.25); }
       if (level >= 5 && s % 2 === 1) play(inst.shaker, when, 1, level >= 8 ? 0.5 : 0.32, musicBus, 0.35);
+      // streak intensifies the score: extra frame-drum hits, driving shaker, a bass pulse
+      if (streak >= 1 && (s === 4 || s === 12)) play(inst.tek, when, 1.15, 0.22, musicBus, -0.3);
+      if (streak >= 2 && (s === 10 || s === 14)) play(inst.doum, when, 1.1, 0.32, musicBus, -0.1);
+      if (streak >= 2 && level < 5 && s % 2 === 1) play(inst.shaker, when, 1.05, 0.22, musicBus, 0.35);
+      if (streak >= 3 && s % 4 === 2) lyre(ROOT[ch] + 12, when, 0.28, musicBus, 0);
       // melody (pan flute) - every other cycle from circle IV, every cycle from VII
       if (level >= 4 && (level >= 7 || cycle % 2 === 1)) { var mel = deep ? MEL_DEEP : MEL; for (var i = 0; i < mel.length; i++) if (mel[i][0] === bar && mel[i][1] === s) flute(mel[i][2], when, mel[i][3] * spb); }
       // bells: Greed glitters, Treachery shimmers
@@ -181,7 +187,7 @@
       /** depth 0 = gate/idle, 1..9 = circle */
       setCircle: function (c) { if (c === circle) return; circle = c; targetLevel = Math.max(0, Math.min(9, c)); if (ac && musicOn) setAmbience(c); if (ac && targetLevel < level) applyLevel(); },
       duck: function (to, ms) { if (!ac || !musicOn) return; var n = ac.currentTime; musicBus.gain.cancelScheduledValues(n); musicBus.gain.setTargetAtTime(0.5 * to, n, 0.05); musicBus.gain.setTargetAtTime(0.5, n + ms / 1000, 0.5); },
-      state: function () { return { ctx: ac ? ac.state : 'none', music: musicOn, sfx: sfxOn, level: level, circle: circle, samples: Object.keys(buf).length, bpm: BPM[level] }; },
+      state: function () { return { ctx: ac ? ac.state : 'none', music: musicOn, sfx: sfxOn, level: level, streak: streak, circle: circle, samples: Object.keys(buf).length, bpm: BPM[level] }; },
       click: function () { if (!ensure() || !sfxOn) return; if (!sample('ui_click', 0.6)) tone(700, 0.04, 'square', 0.06); },
       toggle: function () { if (!ensure() || !sfxOn) return; if (!sample('ui_toggle', 0.6)) tone(520, 0.06, 'triangle', 0.1, 780); },
       jump: function () { if (!ensure() || !sfxOn) return; sample('jump_cloth', 0.5, 1.1); noise(0.28, 0.07, 'bandpass', 500, 2200, null, null, 1.2); },
@@ -190,6 +196,7 @@
         lyre(sc[i], n, 0.55, sfxBus, 0.1); lyre(sc[i] + 12, n + 0.07, 0.3, sfxBus, 0.1); sample('sparkle', 0.25, 1 + i * 0.03, n + 0.05); },
       phew: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; lyre(74, n, 0.4); lyre(78, n + 0.09, 0.4); lyre(81, n + 0.18, 0.45); },
       tension: function (lvl) { if (!ensure() || !sfxOn) return; var n = ac.currentTime, dur = lvl === 2 ? 0.62 : 0.36;
+        if (!lvl) { play(inst.heart, n, 1.1, 0.32); noise(0.22, 0.025, 'bandpass', 500, 1400, n, null, 1.5); return; }
         [0, 0.17].concat(lvl === 2 ? [0.42, 0.57] : []).forEach(function (d) { play(inst.heart, n + d, 1, 0.75); });
         noise(dur, 0.06, 'bandpass', 400, 2600, n, null, 2); tone(260, dur, 'sine', 0.05, 520, n, null, dur * 0.8); if (musicOn) api.duck(0.55, dur * 1000 + 200); },
       idol: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; if (!sample('sting_idol', 0.8)) { [74, 78, 81, 86].forEach(function (m, i) { lyre(m, n + i * 0.07, 0.45); }); }
@@ -210,6 +217,34 @@
       coin: function (i) { if (!ensure() || !sfxOn) return; var n = ac.currentTime; if (n - lastCoin < 0.045) return; lastCoin = n; if (!sample(i % 2 ? 'coin_2' : 'coin_1', 0.35, 0.95 + Math.random() * 0.3)) bell(96 + (i % 5), n, 0.08); },
       tick: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; if (n - lastTick < 0.06) return; lastTick = n; if (!sample('tick', 0.25, 1.2)) tone(1800, 0.02, 'square', 0.03); },
       refill: function () { if (!ensure() || !sfxOn) return; if (!sample('coin_stack', 0.7)) bell(90, null, 0.15); sample('coins_small', 0.5, 1, ac.currentTime + 0.12); },
+      /** safe landing: low shockwave thump + a rune chime */
+      rune: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime + 0.02; tone(85, 0.45, 'sine', 0.22, 40, n); noise(0.35, 0.05, 'bandpass', 1800, 400, n, null, 0.9);
+        [93, 98].forEach(function (m, i) { bell(m, n + 0.06 + i * 0.07, 0.07); }); },
+      /** multiplier counter digits rolling */
+      reel: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; if (n - lastReel < 0.035) return; lastReel = n; tone(2300 + Math.random() * 400, 0.018, 'square', 0.018); },
+      /** lava micro-eruptions near the camera: 0 bubble, 1 spurt, 2 burp (Styx gurgles, Cocytus is silent) */
+      bubble: function (size, c) { if (!ensure() || !sfxOn || c === 9) return; var n = ac.currentTime; if (n - lastBubble < 0.18) return; lastBubble = n;
+        var low = c === 5 || c === 3 || c === 8, f = (low ? 90 : 140) * (size === 2 ? 0.6 : 1) * (0.85 + Math.random() * 0.3), v = [0.05, 0.07, 0.11][size];
+        tone(f, 0.12 + size * 0.06, 'sine', v, f * 2.6, n + 0.02);
+        if (size >= 1 && !low) noise(0.35 + size * 0.2, v * 0.6, 'highpass', 3500, 1800, n + 0.05);
+        if (size === 2) noise(0.6, 0.08, 'lowpass', 220, 90, n); },
+      /** collapse: the lava erupts (roar + rumble) */
+      eruption: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; noise(1.6, 0.26, 'lowpass', 260, 1400, n, null, 0.8); noise(1.2, 0.12, 'highpass', 2500, 900, n + 0.1); tone(48, 1.4, 'sine', 0.3, 32, n, null, 0.08);
+        for (var i = 0; i < 6; i++) tone(180 + Math.random() * 160, 0.1, 'sine', 0.05, 500, n + 0.2 + Math.random() * 0.8); },
+      /** big win coin shower: a cascade of coin clinks */
+      coinShower: function (rank) { if (!ensure() || !sfxOn) return; var n = ac.currentTime, cnt = [0, 0, 10, 16, 24][rank] || 8;
+        for (var i = 0; i < cnt; i++) { var w = n + 0.15 + Math.random() * (0.8 + rank * 0.25); if (!buf.coin_1) bell(94 + Math.floor(Math.random() * 6), w, 0.05); else play(buf[i % 2 ? 'coin_2' : 'coin_1'], w, 0.9 + Math.random() * 0.4, 0.22, null, (Math.random() - 0.5) * 0.8); } },
+      /** cash-out coin fountain launching */
+      whoosh: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; noise(0.55, 0.09, 'bandpass', 500, 3200, n, null, 1.4); },
+      /** circle transition: portal swirl whoosh rising into a boom */
+      portal: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; noise(0.95, 0.1, 'bandpass', 180, 2400, n, null, 2.2); tone(110, 0.9, 'sawtooth', 0.025, 330, n, null, 0.6);
+        play(inst.doum, n + 0.85, 0.7, 0.8); tone(55, 0.9, 'sine', 0.22, 38, n + 0.85); },
+      /** idol slow-motion: a deep whum */
+      slowmo: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; tone(150, 1.1, 'sine', 0.2, 45, n, null, 0.05); noise(0.9, 0.06, 'lowpass', 900, 120, n); },
+      /** streak aura ignites */
+      aura: function (lv) { if (!ensure() || !sfxOn) return; var n = ac.currentTime; noise(0.7, 0.07 + lv * 0.02, 'bandpass', 600, 3800, n, null, 1.2); noise(0.5, 0.06, 'lowpass', 400, 120, n + 0.05); tone(220 * (1 + lv * 0.25), 0.5, 'triangle', 0.04, 440 * (1 + lv * 0.25), n); },
+      /** streak level 0..3 -> music intensity (brighter filter + extra percussion layers) */
+      setStreak: function (lv) { streak = Math.max(0, Math.min(3, lv | 0)); if (ac) applyCutoff(); },
       firework: function () { if (!ensure() || !sfxOn) return; var n = ac.currentTime; noise(0.25, 0.12, 'lowpass', 2000, 200, n); for (var i = 0; i < 6; i++) noise(0.03, 0.05, 'highpass', 4000, null, n + 0.15 + Math.random() * 0.4); }
     };
     return api;

@@ -1,0 +1,25 @@
+{
+ "name": "hero_jump",
+ "fps": 12,
+ "loop": false,
+ "holdLast": true,
+ "frameW": 384,
+ "frameH": 480,
+ "cols": 7,
+ "rows": 5,
+ "frames": 29,
+ "anchor": [
+  0.5,
+  0.95
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "airborne": [
+  15,
+  20
+ ],
+ "landFrame": 21,
+ "charH": 273,
+ "drawScale": 2.0623
+}

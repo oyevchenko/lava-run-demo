@@ -36,7 +36,11 @@
     var audio = LavaAudio(assets);
     // splash with the painted logo until the bitmaps are in (purely visual, never blocks input)
     (function () { var sp = $('splash'); if (!sp) return; var t0 = Date.now(); assets.ready.then(function () { setTimeout(function () { sp.classList.add('gone'); setTimeout(function () { sp.remove(); }, 600); }, Math.max(0, 650 - (Date.now() - t0))); }); })();
-    var scene = LavaScene($('scene'), $('fx'), assets, { quality: qParam, onFirework: function () { audio.firework(); } });
+    var streakLv = 0;
+    var scene = LavaScene($('scene'), $('fx'), assets, { quality: qParam,
+      onFirework: function () { audio.firework(); },
+      onBubble: function (size, c) { audio.bubble(size, c); },
+      onStreak: function (lv) { if (lv > streakLv) audio.aura(lv); streakLv = lv; audio.setStreak(lv); document.documentElement.classList.toggle('streak', lv > 0); document.documentElement.dataset.streak = lv; } });
     var timeScale = 1;
     function later(ms, fn) { return setTimeout(fn, ms / timeScale); }
     var tg = window.Telegram && window.Telegram.WebApp;
@@ -122,7 +126,7 @@
     function curK() { var v = view(); return v ? v.k : 0; }
     function curJ() { var v = view(); return v ? v.j : 0; }
     function ladderNow() { return model.ladder(st.rtp, st.diff, curJ()); }
-    function resetScene() { scene.setup(model.steps(st.diff), ladderNow(), 0); audio.setCircle(0); }
+    function resetScene() { scene.setDifficulty(st.diff); scene.setup(model.steps(st.diff), ladderNow(), 0); audio.setCircle(0); setFrameBg(0); multHold = null; }
 
     function renderLadder(lostAt) {
       var L = $('ladder'), lad = ladderNow(), k = curK(), N = lad.length, html = '', first = C.firstSteps(N);
@@ -151,7 +155,8 @@
       $('hudIdols').textContent = 'x' + Math.pow(2, j);
       $('idolBadge').classList.toggle('on', j > 0);
       hw.classList.remove('cashable');
-      if (st.round) {
+      if (multHold != null && (st.round || (st.last && st.last.status !== 'lost'))) { $('hudMult').textContent = 'x' + (multHold / 100).toFixed(2); if (st.round) { if (k) { hw.textContent = 'Cash out: ' + fmt(st.round.bet * st.round.multCents); hw.classList.add('cashable'); } } else hw.textContent = 'Won ' + fmt(st.last.payoutCents) + ' coins'; }
+      else if (st.round) {
         $('hudMult').textContent = 'x' + ((k ? st.round.multCents : 100) / 100).toFixed(2);
         if (k) { hw.textContent = 'Cash out: ' + fmt(st.round.bet * st.round.multCents); hw.classList.add('cashable'); }
         else hw.textContent = 'Bet ' + st.round.bet + ' - take the first step';
@@ -165,6 +170,34 @@
       renderCircle(circleNow());
     }
     function renderBalance() { $('balance').textContent = fmt(shown); }
+    // multiplier counter: holds the old value until the sparks from the slab arrive, then rolls the digits up with a flash
+    var multHold = null, multRaf = 0, multSafety = null;
+    function rollMult(from, to) {
+      cancelAnimationFrame(multRaf); clearTimeout(multSafety);
+      var el = $('hudMult'), t0 = performance.now(), dur = (st.calm ? 260 : 520) / timeScale, lastShown = -1;
+      el.classList.add('rolling');
+      function tick(now) {
+        var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = Math.round(from + (to - from) * e);
+        multHold = v; if (v !== lastShown) { el.textContent = 'x' + (v / 100).toFixed(2); if (lastShown >= 0) audio.reel(); lastShown = v; }
+        if (k < 1) multRaf = requestAnimationFrame(tick);
+        else { multRaf = 0; multHold = null; el.classList.remove('rolling'); renderHud(); pop('hudMult', 'pop'); if (!st.calm) pop('plaque', 'flash'); }
+      }
+      multRaf = requestAnimationFrame(tick);
+    }
+    function holdMult(from) { multHold = from; clearTimeout(multSafety); multSafety = later(1600, function () { if (multHold != null && !multRaf) { multHold = null; renderHud(); } }); }
+    // balance roll-up: the displayed number eases toward its target (coins arriving push the target up)
+    var balTarget = null, balRaf = 0;
+    function setShown(v) {
+      balTarget = v; $('balance').parentNode.classList.add('rolling');
+      if (balRaf) return;
+      (function step() {
+        var d = balTarget - shown;
+        if (Math.abs(d) <= 1) { shown = balTarget; renderBalance(); balRaf = 0; $('balance').parentNode.classList.remove('rolling'); return; }
+        shown += d > 0 ? Math.max(1, Math.round(d * 0.18)) : Math.min(-1, Math.round(d * 0.18)); renderBalance();
+        if (Math.random() < 0.5) audio.tick();
+        balRaf = requestAnimationFrame(step);
+      })();
+    }
     function renderControls() {
       renderBalance();
       $('betVal').textContent = st.bet;
@@ -203,10 +236,12 @@
       var el = $('circleBanner'), i = C.info(c);
       cbTimers.forEach(clearTimeout);
       el.className = 'circle-banner' + (c === 9 ? ' cb-ice' : '');
-      el.innerHTML = '<div class="cb-num">CIRCLE ' + i.roman + '</div><div class="cb-name"><svg class="laurel" viewBox="0 0 48 24"><use href="#i-laurel"/></svg>' + i.name.toUpperCase() +
+      el.innerHTML = '<div class="cb-medal"><span>' + i.roman + '</span></div><div class="cb-num">CIRCLE ' + i.roman + ' &middot; ' + i.name.toUpperCase() + '</div><div class="cb-name"><svg class="laurel" viewBox="0 0 48 24"><use href="#i-laurel"/></svg>' + i.name.toUpperCase() +
         '<svg class="laurel" viewBox="0 0 48 24" style="transform:scaleX(-1)"><use href="#i-laurel"/></svg></div><div class="cb-tag">' + i.tag + '</div>';
-      cbTimers = [later(1700, function () { el.classList.add('out'); }), later(2100, function () { el.className = 'circle-banner hidden'; })];
+      el.dataset.c = c;
+      cbTimers = [later(2000, function () { el.classList.add('out'); }), later(2450, function () { el.className = 'circle-banner hidden'; })];
     }
+    function enterCircle(c) { scene.enterCircle(c); audio.portal(); audio.circle(c); audio.setCircle(c); circleBanner(c); setFrameBg(c); }
     function hideCircleBanner() { var el = $('circleBanner'); if (el.classList.contains('hidden') || el.classList.contains('out')) return; cbTimers.forEach(clearTimeout); el.classList.add('out'); cbTimers = [later(400, function () { el.className = 'circle-banner hidden'; })]; }
     function pop(id, cls) { var m = $(id); m.classList.remove(cls); void m.offsetWidth; m.classList.add(cls); }
 
@@ -227,10 +262,11 @@
     // balance count-up via coins flying from the hero to the balance pill
     function flyCoins(payout, rank) {
       var from = shown, n = [6, 8, 14, 22, 32][rank] || 8, arrived = 0;
+      audio.whoosh();
       scene.coinFly($('balance'), n, function (i, total) {
-        arrived++; audio.coin(i); shown = Math.min(st.balance, from + Math.round(payout * arrived / total)); if (arrived >= total) shown = st.balance; renderBalance(); pop('balance', 'bump');
+        arrived++; audio.coin(i); setShown(arrived >= total ? st.balance : Math.min(st.balance, from + Math.round(payout * arrived / total))); pop('balance', 'bump');
       });
-      later(2600, function () { if (shown !== st.balance) { shown = st.balance; renderBalance(); } });
+      later(3200, function () { if (shown !== st.balance && !balRaf) { shown = st.balance; renderBalance(); } });
     }
 
     // ---------- idle cues (friendly nudges only: no countdown, no auto-action, no sounds) ----------
@@ -263,7 +299,7 @@
       var tier = C.winTier(r.multCents);
       if (auto === 'cap' && tier.rank < 4) tier = C.TIERS[3];
       var sub = (auto === 'cap' ? 'MAX WIN \u00b7 ' : auto === 'end' ? 'TO THE STARS! \u00b7 ' : '') + fmtMult(r.multCents) + ' \u00b7 ' + C.label(C.circleOf(r.k, r.steps));
-      audio.win(tier); haptic('success');
+      audio.win(tier); haptic('success'); if (tier.rank >= 2) audio.coinShower(tier.rank);
       showWin(tier, payout, sub);
       flyCoins(payout, tier.rank);
       renderAll();
@@ -278,7 +314,7 @@
     }
 
     function doStep() {
-      var prevK = st.round.k, k = prevK + 1, N = st.round.steps;
+      var prevK = st.round.k, k = prevK + 1, N = st.round.steps, prevMult = prevK ? st.round.multCents : 100;
       var stake = model.multCents(st.rtp, st.diff, k, st.round.j);
       var tension = C.tension(k, N, stake); // outcome-neutral anticipation
       st.busy = true; clearIdle(); renderControls(); hideBanner(); hideWin(); hideCircleBanner();
@@ -293,22 +329,23 @@
         return scene.jumpTo(k, res.outcome, {
           tension: tension,
           onLand: function () { audio.land(); },
-          onTension: function (lvl) { audio.tension(lvl); haptic('light'); },
+          onTension: function (lvl) { audio.tension(lvl); if (lvl) haptic('light'); },
           onReveal: function (outcome) {
             if (outcome === 'collapse') {
-              audio.crack(); haptic('error');
+              audio.crack(); haptic('error'); scene.after(720, function () { audio.eruption(); });
               scene.after(300, function () { audio.giggle(); });
               scene.after(860, function () { audio.splash(); });
               scene.after(1150, function () { audio.loss(); });
               return;
             }
-            audio.safe(k, N); if (tension) scene.after(120, function () { audio.phew(); });
+            audio.safe(k, N); audio.rune(); if (tension) scene.after(120, function () { audio.phew(); });
             scene.setLadder(model.ladder(st.rtp, st.diff, res.j), res.j);
+            holdMult(prevMult);
             if (!wonRound) renderAll(); else { renderLadder(); renderHud(); }
-            $('hudMult').textContent = 'x' + (res.multCents / 100).toFixed(2); pop('hudMult', 'pop');
-            if (outcome === 'idol') { audio.idol(); haptic('medium'); scene.idolFly($('idolBadge'), function () { pop('idolBadge', 'hit'); audio.coin(1); }); }
+            scene.multFly($('hudMult'), k, function () { rollMult(prevMult, res.multCents); });
+            if (outcome === 'idol') { audio.idol(); audio.slowmo(); haptic('medium'); scene.idolFly($('idolBadge'), function () { pop('idolBadge', 'hit'); audio.coin(1); }); }
             if (cNew !== cPrev) {
-              scene.after(outcome === 'idol' ? 1300 : 260, function () { scene.enterCircle(cNew); audio.circle(cNew); audio.setCircle(cNew); circleBanner(cNew); });
+              scene.after(outcome === 'idol' ? 1300 : 260, function () { enterCircle(cNew); });
             }
           }
         }).then(function () {
@@ -372,6 +409,29 @@
       else if (e.key === 'c' || e.key === 'C') onCash();
     });
 
+    // ---------- desktop cabinet: scale the fixed reference layout to the window, blurred circle painting behind ----------
+    var DESK = { w: 1040, h: 740 };
+    function fitDesktop() {
+      var de = document.documentElement, desk = innerWidth >= 900 && innerHeight >= 560;
+      de.classList.toggle('desk', desk);
+      if (!desk) { de.style.removeProperty('--s'); return; }
+      var s = Math.min(innerWidth * 0.86 / DESK.w, (innerHeight - 76) / DESK.h);
+      de.style.setProperty('--s', Math.max(0.6, s).toFixed(4));
+    }
+    window.addEventListener('resize', fitDesktop); fitDesktop();
+    assets.ready.then(function () { var c = frameC; frameC = -1; setFrameBg(c < 0 ? circleNow() : c); });
+    var frameC = -1, frameFlip = false;
+    function setFrameBg(c) {
+      if (c === frameC) return;
+      var m = assets.manifest && assets.manifest.images, name = 'bg_circle_' + Math.max(1, c), src = m && m[name] && m[name].src;
+      if (!src || assets.isFallback(name)) return;
+      frameC = c;
+      var url = new URL((assets.manifest.basePath || 'assets/') + src, location.href).href;
+      var a = $('frameBgA'), b = $('frameBgB'); if (!a || !b) return;
+      var on = frameFlip ? a : b, off = frameFlip ? b : a; frameFlip = !frameFlip;
+      on.style.backgroundImage = 'url("' + url + '")'; on.classList.add('on'); off.classList.remove('on');
+    }
+
     // ---------- boot ----------
     applySettings();
     resetScene();
@@ -379,8 +439,8 @@
     if (ar && ar.status === 'active' && model.difficulties[ar.difficulty] && model.rtpOptions.indexOf(ar.rtp) >= 0) {
       provider.resume(ar).then(function (res) {
         st.round = res.round; st.diff = ar.difficulty; st.rtp = ar.rtp;
-        scene.setup(model.steps(st.diff), ladderNow(), st.round.j); scene.restore(st.round.k, st.round.path);
-        audio.setCircle(C.circleOf(st.round.k, st.round.steps));
+        scene.setDifficulty(st.diff); scene.setup(model.steps(st.diff), ladderNow(), st.round.j); scene.restore(st.round.k, st.round.path);
+        audio.setCircle(C.circleOf(st.round.k, st.round.steps)); setFrameBg(C.circleOf(st.round.k, st.round.steps));
         renderAll(); armIdle();
       });
     }
@@ -395,12 +455,14 @@
       providerRound: function () { return provider.current(); },
       setTimeScale: function (v) { timeScale = v > 0 ? v : 1; scene.setTimeScale(timeScale); if (st.round && !st.busy) armIdle(); },
       sceneStats: function () { return scene.stats(); },
+      setQuality: function (q) { scene.setQuality(q); },
       audioState: function () { return audio.state(); },
       assetStats: function () { return assets.stats(); },
       /** visual-only preview of rare celebrations for screenshots: never touches balance, round or RNG */
       fxPreview: function (kind, arg) {
         if (kind === 'win') { var tier = C.TIERS[Math.max(0, Math.min(3, (arg | 0) - 1))], m = [0, 340, 1260, 4880, 21500][tier.rank]; showWin(tier, st.bet * m, 'PREVIEW \u00b7 ' + fmtMult(m)); scene.celebrate(tier); scene.coinFly($('balance'), 14, function () {}); audio.win(tier); }
-        else if (kind === 'circle') { scene.enterCircle(arg); circleBanner(arg); audio.setCircle(arg); }
+        else if (kind === 'circle') { enterCircle(arg); }
+        else if (kind === 'erupt') { scene.eruptNow(); }
       }
     };
   }

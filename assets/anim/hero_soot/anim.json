@@ -1,0 +1,20 @@
+{
+ "name": "hero_soot",
+ "fps": 12,
+ "loop": true,
+ "holdLast": false,
+ "frameW": 384,
+ "frameH": 480,
+ "cols": 8,
+ "rows": 6,
+ "frames": 45,
+ "anchor": [
+  0.5,
+  0.95
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "charH": 273,
+ "drawScale": 2.0623
+}

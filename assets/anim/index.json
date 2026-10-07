@@ -1,0 +1,16 @@
+{
+ "anims": [
+  "hero_idle",
+  "hero_impatient",
+  "hero_nervous",
+  "hero_wave",
+  "hero_jump",
+  "hero_win",
+  "hero_idol",
+  "hero_fall",
+  "hero_soot",
+  "imp_idle",
+  "imp_cheer",
+  "imp_giggle"
+ ]
+}

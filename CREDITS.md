@@ -7,11 +7,13 @@ No copyrighted material is used. The mood-board images in `design/refs/` are ref
 
 - **Game code, renderer and all code-drawn art** (hero, slabs, columns, braziers, imps, idol, arches, nine circle backdrops, lava/ice/swamp textures, UI chrome): original, written for this project (`game/js/**`, `game/css/`).
 - **Background music:** an original generative score composed for this game and synthesized live with WebAudio (`game/js/audio.js`): D-minor/Dorian lyre arpeggios (Karplus-Strong), pad, bass, frame drum (maqsum pattern), pan-flute melody, bells; layers, tempo and filter rise as the run descends through the nine circles, plus per-circle ambience (wind, rain, swamp bubbles, crackle, icy shimmer). No samples.
-- **Synthesized SFX:** whooshes, heartbeat/drum-roll anticipation, lava sizzle and bubbles, imp giggle, firework pops, plus synth fallbacks for every sample (used on `file://`).
+- **Synthesized SFX:** whooshes, heartbeat/drum-roll anticipation, lava sizzle and bubbles, imp giggle, firework pops, plus synth fallbacks for every sample (used on `file://`); the Inferno VFX cues (rune chime, multiplier reel ticks, lava bubbles and eruption rumble, coin shower, whoosh, portal sweep, slow-motion drop, streak aura) are synthesized too. No new sample files were added.
+- **Lava shader, bloom, eruptions, flames, embers, smoke, god rays, coin/confetti physics and the desktop frame:** original code (`game/js/lava-gl.js`, `game/js/render.js`, `game/css/style.css`).
 - **Painted art** (`game/assets/img/`, from the sources in `design/inferno/src/`): hero poses, slab, idol, coin, imps, columns, brazier, the nine circle backdrops, the logo and the UI kit were
   AI-generated concept art made for this project and supplied by the project owner (style references: our own `design/inferno/hero-sheet.jpg` and `key-art-mockup.jpg`; no third-party artwork, characters or logos).
   They were processed by `tools/process-art.py` (background removal with rembg, MIT license, using the IS-Net `isnet-general-use` model, Apache-2.0; these tools only cut the images out).
-  `slab_cracked` is derived from our slab with drawn cracks. Every other bitmap in `design/inferno/ASSET_SPECS.md` falls back to the original code-drawn version.
+  `slab_cracked` is derived from our slab with drawn cracks. The per-circle slab materials are tints/variants of that slab made in code.
+- **Sprite-sequence animations** (`game/assets/anim/`, if present): converted from video clips generated for this project from our own hero/imp art and supplied by the project owner. Every other bitmap in `design/inferno/ASSET_SPECS.md` falls back to the original code-drawn version.
 
 ## Sound effects — Kenney (CC0 1.0 Universal, public domain)
 

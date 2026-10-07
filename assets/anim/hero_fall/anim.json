@@ -1,0 +1,21 @@
+{
+ "name": "hero_fall",
+ "fps": 12,
+ "loop": false,
+ "holdLast": false,
+ "frameW": 384,
+ "frameH": 480,
+ "cols": 6,
+ "rows": 4,
+ "frames": 23,
+ "anchor": [
+  0.5,
+  0.95
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "exitFrame": 19,
+ "charH": 273,
+ "drawScale": 2.0623
+}

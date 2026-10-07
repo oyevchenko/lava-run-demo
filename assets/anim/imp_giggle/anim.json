@@ -1,0 +1,19 @@
+{
+ "name": "imp_giggle",
+ "fps": 12,
+ "loop": true,
+ "holdLast": false,
+ "frameW": 256,
+ "frameH": 256,
+ "cols": 8,
+ "rows": 7,
+ "frames": 51,
+ "anchor": [
+  0.5,
+  1.0
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "charH": 212
+}

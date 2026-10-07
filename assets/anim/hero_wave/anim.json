@@ -1,0 +1,20 @@
+{
+ "name": "hero_wave",
+ "fps": 12,
+ "loop": false,
+ "holdLast": false,
+ "frameW": 384,
+ "frameH": 480,
+ "cols": 8,
+ "rows": 6,
+ "frames": 48,
+ "anchor": [
+  0.5,
+  0.95
+ ],
+ "sheets": [
+  "sheet0.webp"
+ ],
+ "charH": 273,
+ "drawScale": 2.0623
+}
