@@ -159,7 +159,7 @@
     $('optMusic').addEventListener('change', function (e) { setOpt('music', e.target.checked); });
     $('optSfx').addEventListener('change', function (e) { setOpt('sfx', e.target.checked); });
     $('optCalm').addEventListener('change', function (e) { setOpt('calm', e.target.checked); });
-    if (!cfg.stake && saved.playMode === 'slab') cfg.stake = true;
+    if (saved.playMode === 'slab') cfg.stake = true;
     function setPlayMode(mode) {
       if (st.round) { banner('info', t('locked'), t('lockedSub')); return; }
       st.busy = false;

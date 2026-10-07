@@ -21,7 +21,7 @@
     maxBet: Math.max(1, Math.floor(num('maxBet', 500))),
     maxWinX: Math.max(1, num('maxWin', 10000)),
     autocash: q.get('autocash') !== '0',
-    stake: q.get('channel') === 'stake' || q.get('stake') === '1',
+    stake: q.get('channel') !== 'cash' && q.get('stake') !== '0',
     analyticsUrl: q.get('analyticsUrl') || ''
   };
 })(this);
