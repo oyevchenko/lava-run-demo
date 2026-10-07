@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#7e1427">
+<title>Lava Run: Inferno - Demo (virtual coins)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23c22a43' stroke='%23ffd23c' stroke-width='5'/%3E%3Cpath d='M32 12 Q44 28 38 40 Q36 30 32 30 Q28 30 26 40 Q20 28 32 12Z' fill='%23ffd23c'/%3E%3Crect x='18' y='44' width='28' height='6' rx='2' fill='%23ffd23c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.png" alt=""><div class="splash-bar"><i></i></div><p>Demo &middot; virtual coins only, no real money</p></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18.5a3 3 0 1 1-2-2.83V5.5l11-2.5v12.5a3 3 0 1 1-2-2.83V7.3L9 8.9z" fill="currentColor"/></symbol>
+    <symbol id="i-sfx" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6zm8.6 5.1l1.9 1.5-2 3.4-2.3-.9a7.7 7.7 0 0 1-2 1.2L15.8 21h-3.9l-.4-2.5a7.7 7.7 0 0 1-2-1.2l-2.3.9-2-3.4 1.9-1.5a7.6 7.6 0 0 1 0-2.4L5.2 9.4l2-3.4 2.3.9a7.7 7.7 0 0 1 2-1.2L11.9 3h3.9l.4 2.5a7.7 7.7 0 0 1 2 1.2l2.3-.9 2 3.4-1.9 1.5a7.6 7.6 0 0 1 0 2.4z" fill="currentColor" transform="translate(-1.8 0)"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 4C9 4 4 9 4 16c0 1.4.3 2.6.8 3.6C7 13 11 9.5 16 8c-4.4 2.3-7.7 6-9.4 11.2.9.5 2 .8 3.4.8C17 20 20 13 20 4z" fill="currentColor"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5.2-3.4 9.4-8 11-4.6-1.6-8-5.8-8-11V5z" fill="currentColor"/><path d="M12 5v14c3-1.4 5-4.5 5-8V7z" fill="#fff" opacity=".35"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6.5 6 12a6 6 0 0 1-12 0c0-3 1.6-5 3-6.4.2 2 1 3.2 2.2 3.8C11 8 11 5 12 2z" fill="currentColor"/><path d="M12 13c1.6 1.4 2.6 2.6 2.6 4.2a2.6 2.6 0 0 1-5.2 0c0-1.4.9-2.6 2.6-4.2z" fill="#fff" opacity=".55"/></symbol>
+    <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 2.5c-5 0-8.5 3.4-8.5 8 0 2.7 1.2 4.6 3 5.8V20h3v-2h1.2v2h2.6v-2H14.5v2h3v-3.7c1.8-1.2 3-3.1 3-5.8 0-4.6-3.5-8-8.5-8z" fill="currentColor"/><circle cx="8.7" cy="11.3" r="2.2" fill="#2a0c3a"/><circle cx="15.3" cy="11.3" r="2.2" fill="#2a0c3a"/><path d="M12 13.3l-1.3 2.4h2.6z" fill="#2a0c3a"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" fill="currentColor"/></symbol>
+    <symbol id="i-gate" viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12h-3v-9H6v9z" fill="currentColor"/><path d="M8 21v-7h8v7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 14v7" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-idol" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4.2" fill="currentColor"/><path d="M6 21c0-5 2.4-8 6-8s6 3 6 8z" fill="currentColor"/><path d="M5 6.5L2 4M19 6.5L22 4M12 1.5V0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-laurel" viewBox="0 0 48 24"><g fill="currentColor"><path d="M24 22C14 22 6 16 4 6c3 1 4 3 4.5 5C10 9 11 7 10 4c3 2 3 5 2.5 7.5C14 10 15 8 15 6c2 2.5 1.6 5.5.6 7.6 1.4-.8 2.8-2.4 3.2-4 1.4 2.6.6 5.6-1.4 7.4 1.6.1 3.6-.6 4.6-1.4.4 2.8-1 4.6-3 5.4"/><path d="M24 22c10 0 18-6 20-16-3 1-4 3-4.5 5C38 9 37 7 38 4c-3 2-3 5-2.5 7.5C34 10 33 8 33 6c-2 2.5-1.6 5.5-.6 7.6-1.4-.8-2.8-2.4-3.2-4-1.4 2.6-.6 5.6 1.4 7.4-1.6.1-3.6-.6-4.6-1.4-.4 2.8 1 4.6 3 5.4"/></g></symbol>
+  </defs>
+</svg>
+<div id="app">
+  <header class="topbar">
+    <div class="logo" aria-label="Lava Run: Inferno"><div class="logo-word"><span class="l1">LAVA</span><span class="l2">RUN</span></div><div class="logo-ribbon">INFERNO</div></div>
+    <div class="balance" title="Virtual coins"><span class="coin"></span><span id="balance" class="stroke">1000.00</span>
+      <button id="refillBtn" class="plus" title="Free refill to 1000 virtual coins" aria-label="Refill virtual coins"><svg><use href="#i-plus"/></svg></button></div>
+    <div class="top-actions">
+      <button id="musicBtn" class="ib" title="Music" aria-label="Toggle music" aria-pressed="true"><svg><use href="#i-music"/></svg></button>
+      <button id="sfxBtn" class="ib" title="Sound effects" aria-label="Toggle sound effects" aria-pressed="true"><svg><use href="#i-sfx"/></svg></button>
+      <button id="infoBtn" class="ib" title="Settings &amp; rules" aria-label="Settings and rules"><svg><use href="#i-gear"/></svg></button>
+    </div>
+  </header>
+
+  <section id="stage">
+    <canvas id="scene" aria-label="Lava Run Inferno game scene"></canvas>
+    <div class="hud">
+      <div class="plaque" id="plaque">
+        <div class="medal medal-l" title="Current circle"><span id="hudMedal" class="stroke">&#8962;</span></div>
+        <div class="plaque-mid">
+          <div id="hudMult" class="mult stroke">x1.00</div>
+          <div id="hudCircle" class="circle-label stroke">The Gate</div>
+        </div>
+        <div class="medal medal-r" title="Step"><small>STEP</small><span id="hudStep" class="stroke">0/20</span></div>
+      </div>
+      <div class="hud-row">
+        <div id="hudWin" class="hud-win stroke">Press GO to descend</div>
+        <div id="idolBadge" class="idol-badge" title="Golden Idol multiplier"><svg><use href="#i-idol"/></svg><span id="hudIdols" class="stroke">0</span></div>
+      </div>
+    </div>
+    <div id="descent" class="descent" aria-label="Descent through the nine circles"></div>
+    <div id="banner" class="banner hidden" aria-live="polite"></div>
+    <div id="circleBanner" class="circle-banner hidden" aria-live="polite"></div>
+    <div id="winOverlay" class="win-overlay hidden" aria-live="polite">
+      <div class="win-card"><div id="winTitle" class="win-title stroke">BIG WIN</div><div id="winAmount" class="win-amount stroke">+0.00</div><div id="winMult" class="win-mult stroke"></div><div class="win-skip">tap to continue</div></div>
+    </div>
+    <div id="idleHint" class="idle-hint" aria-live="polite">Step or take the gold?</div>
+    <button id="calmQuick" class="calm-quick" title="Calm effects" aria-label="Toggle calm effects" aria-pressed="false">CALM</button>
+  </section>
+
+  <aside class="side">
+    <section class="ladder-wrap"><div id="ladder" class="ladder" aria-label="Upcoming multipliers"></div></section>
+
+    <section class="controls">
+      <div id="diffSeg" class="seg" role="tablist" aria-label="Difficulty"></div>
+      <div class="bet-row">
+        <div class="bet-box">
+          <button id="betMinus" class="bet-btn" aria-label="Decrease bet">&minus;</button>
+          <div class="bet-val"><div class="bet-label">BET</div><div class="bet-num"><span id="betVal">10</span><span class="coin sm"></span></div></div>
+          <button id="betPlus" class="bet-btn" aria-label="Increase bet">+</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-bet="half">&frac12;</button>
+          <button class="chip" data-bet="double">2&times;</button>
+          <button class="chip" data-bet="max">MAX</button>
+        </div>
+      </div>
+      <div class="main-btns">
+        <button id="goBtn" class="btn btn-go"><span id="goLabel" class="stroke">GO</span><small id="goSub" class="stroke">bet 10 &amp; step</small></button>
+        <button id="cashBtn" class="btn btn-cash" disabled><span class="stroke">CASH OUT</span><small id="cashSub" class="stroke">&mdash;</small></button>
+      </div>
+    </section>
+
+    <section class="history-wrap">
+      <div class="history-title">History</div>
+      <div id="history" class="history"></div>
+    </section>
+
+    <footer class="footer">Demo, virtual coins only, no real money. <span id="rtpNote">RTP 96%</span> &middot; 18+</footer>
+  </aside>
+</div>
+<canvas id="fx" class="fx" aria-hidden="true"></canvas>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <button id="modalClose" class="modal-close" aria-label="Close">&times;</button>
+    <h2 id="modalTitle" class="stroke">Settings &amp; Rules</h2>
+    <div class="settings">
+      <label class="toggle"><input type="checkbox" id="optMusic" checked><span class="sw"></span><span>Music</span></label>
+      <label class="toggle"><input type="checkbox" id="optSfx" checked><span class="sw"></span><span>Sound effects</span></label>
+      <label class="toggle"><input type="checkbox" id="optCalm"><span class="sw"></span><span>Calm effects <small>(no shake, softer flashes, fewer particles)</small></span></label>
+    </div>
+    <h3>How to play</h3>
+    <ol class="rules">
+      <li>Pick a bet and a difficulty, press <b>GO</b>. The young poet leaps onto the first marble slab of the descent.</li>
+      <li>Each slab may crumble into the lava &mdash; then the round is lost.</li>
+      <li>Every safe slab raises the multiplier. Press <b>CASH OUT</b> any time after the first step.</li>
+      <li>A <b>Golden Idol</b> can appear on a safe slab: it <b>doubles</b> your running multiplier (all upcoming slabs too).</li>
+      <li>The run descends through Dante's <b>nine circles</b>, from Limbo to frozen Cocytus. Reaching the last slab or the max win of <span id="capNote">10,000x</span> cashes out automatically.</li>
+    </ol>
+    <h3>Difficulty</h3>
+    <table class="diff-table"><thead><tr><th></th><th>Slabs</th><th>Collapse</th><th>Idol</th><th>Top (no idol)</th></tr></thead><tbody id="diffTable"></tbody></table>
+    <h3>Return to player (demo setting)</h3>
+    <div id="rtpSeg" class="seg small"></div>
+    <p class="fine">Theoretical RTP is the same for any cash-out strategy up to 2-decimal rounding (see PAR sheet). Outcomes come from <code>crypto.getRandomValues</code> on this device; circles, effects and sounds are cosmetic only. This is a free demo: virtual coins have no value, cannot be bought, and cannot be cashed out. Art, music and credits: see CREDITS.md.</p>
+  </div>
+</div>
+
+<script src="data/lava-run-tables.js"></script>
+<script src="assets/manifest.js"></script>
+<script src="js/rng.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/circles.js"></script>
+<script src="js/art/core.js"></script>
+<script src="js/art/props.js"></script>
+<script src="js/art/hero.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
