@@ -316,6 +316,15 @@
       $('goBtn').title = broke ? t('brokeTitle') : '';
       var canCash = !cfg.stake && active && st.round.k >= 1 && !st.busy;
       $('cashBtn').hidden = !!cfg.stake;
+      var pw = $('possibleWin');
+      if (pw) {
+        pw.hidden = !cfg.stake;
+        if (cfg.stake && st.autoStep) {
+          var pm = model.multCents(st.rtp, st.diff, st.autoStep, 0);
+          $('possibleAmt').textContent = fmt(st.bet * pm);
+          $('possibleSub').textContent = t('ifHolds', { n: st.autoStep });
+        }
+      }
       $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
       $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
       ['betMinus', 'betPlus'].forEach(function (id) { $(id).disabled = active || st.busy; });
@@ -329,7 +338,7 @@
       var row = $('autoRow'), seg = $('autoSeg'); if (!row || !seg) return;
       row.hidden = !cfg.autocash;
       row.classList.toggle('locked', !!st.round || st.busy);
-      $('autoLabel').textContent = t('auto');
+      $('autoLabel').textContent = cfg.stake ? t('possible') : t('auto');
       var n = model.steps(st.diff);
       var opts = cfg.stake
         ? [{ v: 3, l: '3' }, { v: 5, l: '5' }, { v: 10, l: '10' }, { v: n, l: 'MAX' }]
@@ -344,7 +353,7 @@
           var b = document.createElement('button'); b.type = 'button'; b.dataset.step = String(o.v); b.textContent = o.l; b.setAttribute('role', 'tab');
           b.addEventListener('click', function () {
             if (st.round || st.busy) return;
-            st.autoStep = o.v; audio.click(); save(); renderAuto();
+            st.autoStep = o.v; audio.click(); save(); renderControls();
           });
           seg.appendChild(b);
         });
