@@ -468,7 +468,12 @@ html.desk #frameDeco:before,html.desk #frameDeco:after{content:'';position:absol
 html.desk #frameDeco:before{top:-26px}html.desk #frameDeco:after{bottom:-26px}
 html.desk #frameDeco i{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffb0a0,#d0203a 45%,#6a0814 80%);box-shadow:0 0 0 3px #ffd96a,0 0 0 5px #7a4a10,0 0 14px rgba(255,80,60,.8)}
 html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:nth-child(2){right:-19px;top:-19px}html.desk #frameDeco i:nth-child(3){left:-19px;bottom:-19px}html.desk #frameDeco i:nth-child(4){right:-19px;bottom:-19px}
-html.desk .ladder-wrap{order:1;flex:1 1 auto;max-height:none;min-height:0}
+html.stake #autoRow{display:none !important}
+html.stake #slabRow{display:flex !important}
+html.stake #cashBtn{display:none !important}
+html.stake #possibleWin{display:flex !important}
+html.desk .ladder-wrap{min-height:220px;background:linear-gradient(#4a3040,#2a1822)}
+html.desk .ladder{display:flex;flex-wrap:wrap;height:auto;min-height:180px}
 .slab-row{display:flex;align-items:center;gap:6px;margin-top:8px}
 .slab-row[hidden]{display:none}
 .slab-row .bet-box{flex:1;height:48px}
