@@ -317,34 +317,38 @@
       $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
       $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
       ['betMinus', 'betPlus'].forEach(function (id) { $(id).disabled = active || st.busy; });
-      Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) { c.disabled = active || st.busy; });
+      Array.prototype.forEach.call(document.querySelectorAll('.chips .chip'), function (c) { c.disabled = active || st.busy; });
       $('refillBtn').disabled = st.busy || active || st.balance >= START_COINS * 100;
       $('rtpNote').textContent = 'RTP ' + st.rtp + '%';
       var cashSpan = $('cashBtn').querySelector('span'); if (cashSpan) cashSpan.textContent = t('cash');
       renderAuto();
     }
     function renderAuto() {
-      var row = $('autoRow'); if (!row) return;
+      var row = $('autoRow'), seg = $('autoSeg'); if (!row || !seg) return;
       row.hidden = !cfg.autocash;
       row.classList.toggle('locked', !!st.round || st.busy);
-      $('autoLabel').textContent = t('auto').split(' ')[0].toUpperCase();
-      var box = $('autoChips'), n = model.steps(st.diff);
+      $('autoLabel').textContent = t('auto');
+      var n = model.steps(st.diff);
       var opts = [{ v: 0, l: t('autoOff') }, { v: 3, l: '3' }, { v: 5, l: '5' }, { v: 10, l: '10' }, { v: n, l: 'MAX' }];
-      var key = opts.map(function (o) { return o.v; }).join(',');
-      if (box.dataset.key !== key) {
-        box.innerHTML = '';
+      var key = opts.map(function (o) { return o.v + ':' + o.l; }).join(',');
+      if (seg.dataset.key !== key) {
+        seg.innerHTML = '';
         opts.forEach(function (o) {
           if (o.v && o.v > n) return;
-          var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.step = String(o.v); b.textContent = o.l;
+          if (o.v && o.v !== n && opts.some(function (x) { return x !== o && x.v === o.v; })) return;
+          var b = document.createElement('button'); b.type = 'button'; b.dataset.step = String(o.v); b.textContent = o.l; b.setAttribute('role', 'tab');
           b.addEventListener('click', function () {
             if (st.round || st.busy) return;
             st.autoStep = o.v; audio.click(); save(); renderAuto();
           });
-          box.appendChild(b);
+          seg.appendChild(b);
         });
-        box.dataset.key = key;
+        seg.dataset.key = key;
       }
-      Array.prototype.forEach.call(box.children, function (b) { b.classList.toggle('on', +b.dataset.step === (st.autoStep || 0)); });
+      Array.prototype.forEach.call(seg.children, function (b) {
+        var on = +b.dataset.step === (st.autoStep || 0);
+        b.classList.toggle('active', on); b.setAttribute('aria-selected', on);
+      });
     }
     function renderHistory() {
       $('history').innerHTML = st.history.map(function (h, i) {
