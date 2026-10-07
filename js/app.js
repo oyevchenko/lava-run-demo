@@ -75,7 +75,15 @@
     if (qa) STORE_KEY += '.qa';
     var provider = LavaEngine.LocalRoundProvider(model, qa ? QaRng(model, function () { return provider.current(); }, qa) : LavaRng.CryptoRng());
     if (qa) { document.documentElement.classList.add('qa'); var qb = document.createElement('div'); qb.id = 'qaBadge'; qb.title = 'QA test mode: forced outcomes, separate wallet. Not real play.';
-      qb.textContent = 'QA MODE' + (qa.mode === 'idols' ? ' \u00b7 ALL IDOLS' : qa.mode === 'nolose' ? ' \u00b7 NO LOSE' : '') + (qa.lose ? ' \u00b7 LOSE @' + qa.lose : ''); ($('stage') || document.body).appendChild(qb); }
+      var qaBits = ['QA MODE'];
+      if (qa.lose && qa.mode === 'nolose') qaBits.push('SAFE UNTIL LOSE @' + qa.lose);
+      else {
+        if (qa.mode === 'idols') qaBits.push('ALL IDOLS');
+        else if (qa.mode === 'nolose') qaBits.push('NO LOSE');
+        else qaBits.push('IDOLS + NO LOSE');
+        if (qa.lose) qaBits.push('LOSE @' + qa.lose);
+      }
+      qb.textContent = qaBits.join(' \u00b7 '); ($('stage') || document.body).appendChild(qb); }
     var assets = LavaAssets(window.LAVA_ASSET_MANIFEST, {});
     var audio = LavaAudio(assets);
     // splash stays up until the gate art and the standing hero are in; the bar tracks that, not a fake loop
@@ -160,6 +168,11 @@
       rseg.appendChild(b);
     });
     $('capNote').textContent = model.cap.toLocaleString('en-US') + 'x';
+    if ($('capNote2')) $('capNote2').textContent = model.cap.toLocaleString('en-US') + 'x';
+    if ($('minBetNote')) $('minBetNote').textContent = String(MIN_BET);
+    if ($('maxBetNote')) $('maxBetNote').textContent = String(MAX_BET);
+    if ($('capCoinsNote')) $('capCoinsNote').textContent = (model.cap * MAX_BET).toLocaleString('en-US');
+    if ($('buildNote')) $('buildNote').textContent = 'build ' + (window.LAVA_BUILD || 'dev');
     var desc = $('descent');
     for (var ci = 1; ci <= 9; ci++) { var pip = document.createElement('div'); pip.className = 'pip'; pip.textContent = C.info(ci).roman; pip.title = C.label(ci); desc.appendChild(pip); }
 
@@ -167,9 +180,11 @@
       $('diffTable').innerHTML = model.difficultyIds.map(function (id) {
         var d = model.difficulties[id], n = d.steps;
         return '<tr><td>' + d.label + '</td><td>' + n + '</td><td>' + (d.collapseProb * 100).toFixed(0) + '%</td><td>' +
-          (d.idolProb * 100).toFixed(0) + '%</td><td>' + fmtMult(model.multCents(st.rtp, id, n, 0)) + '</td></tr>';
+          (d.idolProb * 100).toFixed(0) + '%</td><td>' + fmtMult(model.multCents(st.rtp, id, 1, 0)) + '</td><td>' + fmtMult(model.multCents(st.rtp, id, n, 0)) + '</td></tr>';
       }).join('');
-      Array.prototype.forEach.call(rseg.children, function (b) { b.classList.toggle('active', +b.dataset.r === st.rtp); });
+      var detail = $('rtpDetail');
+      if (detail) detail.textContent = 'Selected RTP ' + st.rtp + '% applies to every difficulty. Step 1 and the no-idol top above are at that RTP. Rounding down to 0.01x keeps the realised return at or below the target.';
+      Array.prototype.forEach.call(rseg.children, function (b) { b.classList.toggle('active', +b.dataset.r === st.rtp); b.disabled = !!st.round; });
       rseg.classList.toggle('locked', !!st.round);
     }
 
@@ -215,11 +230,20 @@
       } else if (st.last) {
         $('hudMult').textContent = st.last.status === 'lost' ? 'x0.00' : 'x' + (st.last.multCents / 100).toFixed(2);
         hw.textContent = st.last.status === 'lost' ? 'Lost ' + st.last.bet + ' coins' : 'Won ' + fmt(st.last.payoutCents) + ' coins';
+        showNext(null);
       } else {
-        $('hudMult').textContent = 'x' + (model.multCents(st.rtp, st.diff, 1, 0) / 100).toFixed(2);
+        $('hudMult').textContent = 'x1.00';
         hw.textContent = 'Press GO to descend';
+        showNext(model.multCents(st.rtp, st.diff, 1, 0));
       }
+      if (st.round && k < n) showNext(model.multCents(st.rtp, st.diff, k + 1, j));
+      else if (st.round) showNext(null);
       renderCircle(circleNow());
+    }
+    function showNext(cents) {
+      var el = $('hudNext'); if (!el) return;
+      if (cents == null) { el.hidden = true; return; }
+      el.hidden = false; el.textContent = 'next ' + fmtMult(cents);
     }
     function renderBalance() { $('balance').textContent = fmt(shown); }
     // multiplier counter: holds the old value until the sparks from the slab arrive, then rolls the digits up with a flash
@@ -250,16 +274,33 @@
         balRaf = requestAnimationFrame(step);
       })();
     }
+    function fitBet() {
+      if (st.round || st.busy) return;
+      var afford = Math.floor(st.balance / 100);
+      if (afford < MIN_BET || st.bet <= afford) return;
+      var steps = BET_STEPS.filter(function (b) { return b <= afford; });
+      st.bet = steps.length ? steps[steps.length - 1] : afford;
+      save();
+    }
     function renderControls() {
+      fitBet();
       renderBalance();
       $('betVal').textContent = st.bet;
-      Array.prototype.forEach.call(seg.children, function (b) { b.classList.toggle('active', b.dataset.d === st.diff); b.setAttribute('aria-selected', b.dataset.d === st.diff); });
-      seg.classList.toggle('locked', !!st.round);
-      var active = !!st.round;
+      var inRound = !!st.round;
+      Array.prototype.forEach.call(seg.children, function (b) {
+        b.classList.toggle('active', b.dataset.d === st.diff);
+        b.setAttribute('aria-selected', b.dataset.d === st.diff);
+        b.disabled = inRound || st.busy;
+      });
+      seg.classList.toggle('locked', inRound || st.busy);
+      var active = inRound;
+      var broke = !active && st.bet * 100 > st.balance;
       $('goLabel').textContent = active ? 'STEP' : 'GO';
       if (active) { var nk = st.round.k + 1; $('goSub').textContent = nk <= st.round.steps ? 'next: ' + fmtMult(model.multCents(st.rtp, st.diff, nk, st.round.j)) : ''; }
-      else $('goSub').textContent = 'bet ' + st.bet + ' & descend';
-      $('goBtn').disabled = st.busy || (!active && st.bet * 100 > st.balance);
+      else if (broke) $('goSub').textContent = Math.floor(st.balance / 100) < MIN_BET ? 'tap + for coins' : 'lower bet or tap +';
+      else $('goSub').textContent = 'bet ' + st.bet + ' · next ' + fmtMult(model.multCents(st.rtp, st.diff, 1, 0));
+      $('goBtn').disabled = st.busy || broke;
+      $('goBtn').title = broke ? 'Not enough coins. Tap + for a free refill, or lower the bet.' : '';
       var canCash = active && st.round.k >= 1 && !st.busy;
       $('cashBtn').disabled = !canCash; $('cashBtn').classList.toggle('ready', canCash);
       $('cashSub').textContent = canCash ? fmt(st.round.bet * st.round.multCents) : '\u2014';
@@ -270,8 +311,10 @@
     }
     function renderHistory() {
       $('history').innerHTML = st.history.map(function (h) {
-        return h.win ? '<span class="h w">' + fmtMult(h.mult) + '<span class="d">' + h.d + '</span></span>'
-                     : '<span class="h l">LAVA<span class="d">' + h.d + ' @' + h.k + '</span></span>';
+        var when = h.t ? new Date(h.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var tail = (h.bet != null ? ' bet ' + h.bet : '') + (h.win ? ' +' + fmt(h.pay || 0) : '') + (when ? ' ' + when : '') + (h.id ? ' #' + String(h.id).slice(-4) : '');
+        return h.win ? '<span class="h w" title="' + tail + '">' + fmtMult(h.mult) + '<span class="d">' + h.d + tail + '</span></span>'
+                     : '<span class="h l" title="' + tail + '">LAVA<span class="d">' + h.d + ' @' + h.k + tail + '</span></span>';
       }).join('') || '<span class="h">No rounds yet</span>';
     }
     function renderAll(lostAt) { renderControls(); renderLadder(lostAt); renderHud(); renderHistory(); renderInfo(); }
@@ -340,8 +383,10 @@
     document.addEventListener('pointerdown', function (e) { if (st.round && !st.busy && !(e.target.closest && e.target.closest('#goBtn,#cashBtn'))) armIdle(); }, true);
 
     var DIFF_TAG = { easy: 'E', medium: 'M', hard: 'H', extreme: 'X' };
-    function pushHistory(isWin, mult, k) {
-      st.history.unshift({ win: isWin, mult: mult, k: k, d: DIFF_TAG[st.diff] || st.diff[0].toUpperCase() });
+    function pushHistory(isWin, mult, k, round) {
+      var r = round || {};
+      st.history.unshift({ win: isWin, mult: mult, k: k, d: DIFF_TAG[st.diff] || st.diff[0].toUpperCase(),
+        bet: r.bet, pay: r.payoutCents || 0, id: r.id || '', j: r.j || 0, t: Date.now() });
       st.history = st.history.slice(0, 20);
     }
 
@@ -360,7 +405,7 @@
     function settleWin(res, auto) {
       st.balance += res.payoutCents;
       var r = res.round; st.round = null; st.last = r; st.rounds++;
-      pushHistory(true, r.multCents, r.k);
+      pushHistory(true, r.multCents, r.k, r);
       save();
       return r;
     }
@@ -374,7 +419,7 @@
       return provider.step().then(function (res) {
         // persist the result BEFORE animating, so closing the app mid-animation can't re-roll it
         var lost = res.outcome === 'collapse', wonRound = null;
-        if (lost) { st.round = null; st.last = res.round; st.rounds++; pushHistory(false, 0, k); save(); }
+        if (lost) { st.round = null; st.last = res.round; st.rounds++; pushHistory(false, 0, k, res.round); save(); }
         else if (res.auto) wonRound = settleWin({ payoutCents: res.payoutCents, round: res.round }, res.auto);
         else { st.round = res.round; save(); }
         var cPrev = C.circleOf(prevK, N), cNew = C.circleOf(k, N);
@@ -501,6 +546,21 @@
       });
     }
     renderAll();
+    (function coach() {
+      var el = $('coach'), text = $('coachText'), btn = $('coachNext');
+      if (!el || qa || store.getItem('lavaRun.seenCoach')) return;
+      var tips = [
+        'Press GO to step onto the next slab. It can hold, or it can fall.',
+        'After the first safe step, CASH OUT takes the gold. Space steps, C cashes out.',
+        'A Golden Idol doubles the multiplier, and every slab after it.'
+      ];
+      var i = 0;
+      function show() { text.textContent = tips[i]; btn.textContent = i < tips.length - 1 ? 'Next' : 'Got it'; el.classList.remove('hidden'); }
+      function hide() { el.classList.add('hidden'); store.setItem('lavaRun.seenCoach', '1'); }
+      btn.addEventListener('click', function () { i++; if (i >= tips.length) hide(); else show(); });
+      $('goBtn').addEventListener('click', function () { if (!el.classList.contains('hidden')) hide(); });
+      show();
+    })();
 
     // hooks for automated tests: read-only state + purely visual controls (no way to influence outcomes or balance)
     window.__lavaRun = {

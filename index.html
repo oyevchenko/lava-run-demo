@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610071829" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
+<div id="splash" class="splash" aria-hidden="true"><div class="splash-glow"></div><img class="splash-logo" src="assets/img/logo.webp?v=202610072014" alt=""><div class="splash-bar"><i id="splashFill"></i></div><p id="splashNote">Demo &middot; virtual coins only, no real money</p></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18.5a3 3 0 1 1-2-2.83V5.5l11-2.5v12.5a3 3 0 1 1-2-2.83V7.3L9 8.9z" fill="currentColor"/></symbol>
@@ -51,6 +51,7 @@
         <div class="medal medal-l" title="Current circle"><span id="hudMedal" class="stroke">&#8962;</span></div>
         <div class="plaque-mid">
           <div id="hudMult" class="mult stroke">x1.00</div>
+          <div id="hudNext" class="hud-next">next x1.13</div>
           <div id="hudCircle" class="circle-label stroke">The Gate</div>
         </div>
         <div class="medal medal-r" title="Step"><small>STEP</small><span id="hudStep" class="stroke">0/20</span></div>
@@ -72,6 +73,12 @@
 
   <aside class="side">
     <section class="ladder-wrap"><div id="ladder" class="ladder" aria-label="Upcoming multipliers"></div></section>
+    <section class="desk-help" id="deskHelp">
+      <b>How to play</b>
+      <p>GO steps onto the next slab. It can fall.</p>
+      <p>CASH OUT any time after the first safe step. Space steps, C cashes out.</p>
+      <p>A Golden Idol doubles this multiplier and every slab after it.</p>
+    </section>
 
     <section class="controls">
       <div id="diffSeg" class="seg" role="tablist" aria-label="Difficulty"></div>
@@ -115,35 +122,55 @@
     </div>
     <h3>How to play</h3>
     <ol class="rules">
-      <li>Pick a bet and a difficulty, press <b>GO</b>. The poet leaps onto the first marble slab of the descent.</li>
-      <li>Each slab may crumble into the lava &mdash; then the round is lost.</li>
-      <li>Every safe slab raises the multiplier. Press <b>CASH OUT</b> any time after the first step.</li>
-      <li>A <b>Golden Idol</b> can appear on a safe slab: it <b>doubles</b> your running multiplier (all upcoming slabs too).</li>
-      <li>The run descends through Dante's <b>nine circles</b>, from Limbo to frozen Cocytus. Reaching the last slab or the max win of <span id="capNote">10,000x</span> cashes out automatically.</li>
+      <li>Pick a bet and a difficulty, press <b>GO</b> (or Space / Enter). The poet leaps onto the first marble slab.</li>
+      <li>Each slab may crumble into the lava. Then the bet is lost.</li>
+      <li>Every safe slab raises the multiplier. Press <b>CASH OUT</b> (or C) any time after the first safe step.</li>
+      <li>A <b>Golden Idol</b> on a safe slab <b>doubles</b> the running multiplier, including every slab after it. Idols are inside the RTP.</li>
+      <li>The run descends through Dante's nine circles, from Limbo to frozen Cocytus. The last slab, or the max win of <span id="capNote">10,000x</span>, cashes out on its own.</li>
     </ol>
+    <h3>Limits</h3>
+    <ul class="rules">
+      <li>Bet from <b id="minBetNote">1</b> to <b id="maxBetNote">500</b> virtual coins. The demo starts at 1,000.</li>
+      <li>Max win is <span id="capNote2">10,000x</span> the bet (<span id="capCoinsNote">5,000,000</span> coins at the max bet).</li>
+      <li>Multipliers are rounded <b>down</b> to 0.01x. The first safe step is always above 1.00x, so a cash-out is never shown as less than the stake.</li>
+    </ul>
     <h3>Difficulty</h3>
-    <table class="diff-table"><thead><tr><th></th><th>Slabs</th><th>Collapse</th><th>Idol</th><th>Top (no idol)</th></tr></thead><tbody id="diffTable"></tbody></table>
-    <h3>Return to player (demo setting)</h3>
+    <table class="diff-table"><thead><tr><th></th><th>Slabs</th><th>Collapse</th><th>Idol</th><th>Step 1</th><th>Top (no idol)</th></tr></thead><tbody id="diffTable"></tbody></table>
+    <p class="fine" id="rtpDetail"></p>
+    <h3>Return to player (operator setting)</h3>
     <div id="rtpSeg" class="seg small"></div>
-    <p class="fine">Theoretical RTP is the same for any cash-out strategy up to 2-decimal rounding (see PAR sheet). Outcomes come from <code>crypto.getRandomValues</code> on this device; circles, effects and sounds are cosmetic only. This is a free demo: virtual coins have no value, cannot be bought, and cannot be cashed out. Art, music and credits: see CREDITS.md.</p>
+    <p class="fine">The selected RTP applies to every difficulty and to any cash-out strategy, up to rounding down. Outcomes are one integer per step from <code>crypto.getRandomValues</code> on this device: below the collapse line the slab falls, below the idol line it holds with a Golden Idol, otherwise it holds. Circles, animation and sound do not change the result.</p>
+    <h3>Unfinished round and faults</h3>
+    <ul class="rules">
+      <li>There is no decision timer. This demo restores an open round on the same device. A real-money build cashes an unfinished round out at the current multiplier after the operator's timeout (only once a safe step has landed); a round with no step yet is voided.</li>
+      <li>Malfunction voids all pays and plays.</li>
+      <li>Hotkeys: Space or Enter to step, C to cash out, Esc to close this panel.</li>
+    </ul>
+    <p class="fine">Game <span id="buildNote">dev</span>. Free demo: virtual coins have no value, cannot be bought, and cannot be cashed out. Art, music and credits: see CREDITS.md.</p>
   </div>
 </div>
 
 <div id="turn" class="turn" role="dialog" aria-label="Rotate your phone"><p>Turn your phone upright</p></div>
+<div id="coach" class="coach hidden" role="dialog" aria-label="How to play">
+  <div class="coach-card">
+    <p id="coachText"></p>
+    <button id="coachNext" type="button">Next</button>
+  </div>
+</div>
 
-<script src="js/build.js?v=202610071829"></script>
-<script src="data/lava-run-tables.js?v=202610071829"></script>
-<script src="assets/manifest.js?v=202610071829"></script>
-<script src="js/rng.js?v=202610071829"></script>
-<script src="js/engine.js?v=202610071829"></script>
-<script src="js/circles.js?v=202610071829"></script>
-<script src="js/art/core.js?v=202610071829"></script>
-<script src="js/art/props.js?v=202610071829"></script>
-<script src="js/art/hero.js?v=202610071829"></script>
-<script src="js/assets.js?v=202610071829"></script>
-<script src="js/audio.js?v=202610071829"></script>
-<script src="js/lava-gl.js?v=202610071829"></script>
-<script src="js/render.js?v=202610071829"></script>
-<script src="js/app.js?v=202610071829"></script>
+<script src="js/build.js?v=202610072014"></script>
+<script src="data/lava-run-tables.js?v=202610072014"></script>
+<script src="assets/manifest.js?v=202610072014"></script>
+<script src="js/rng.js?v=202610072014"></script>
+<script src="js/engine.js?v=202610072014"></script>
+<script src="js/circles.js?v=202610072014"></script>
+<script src="js/art/core.js?v=202610072014"></script>
+<script src="js/art/props.js?v=202610072014"></script>
+<script src="js/art/hero.js?v=202610072014"></script>
+<script src="js/assets.js?v=202610072014"></script>
+<script src="js/audio.js?v=202610072014"></script>
+<script src="js/lava-gl.js?v=202610072014"></script>
+<script src="js/render.js?v=202610072014"></script>
+<script src="js/app.js?v=202610072014"></script>
 </body>
 </html>

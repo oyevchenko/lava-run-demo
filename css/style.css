@@ -90,7 +90,7 @@ svg{width:100%;height:100%;display:block}
 .banner.hidden{display:none}
 .banner .big{white-space:nowrap;font:32px/1.05 'Lilita One',sans-serif;color:#fff;-webkit-text-stroke:6px #5a1a10;paint-order:stroke fill}
 .banner .small{font:14px/1.2 'Lilita One',sans-serif;color:#ffe9a8;-webkit-text-stroke:3px #5a1a10;paint-order:stroke fill;margin-top:3px}
-.banner.lose{background:linear-gradient(#5b6584,#353c55);border-color:#e8d3b0}
+.banner.lose{top:16%;background:linear-gradient(#5b6584,#353c55);border-color:#e8d3b0}
 .banner.lose .big{color:#ffb36b}
 .banner.info{background:linear-gradient(#ffd96a,#e9a21e);}
 .banner.info .big{-webkit-text-stroke-color:#7a3f05}.banner.info .small{color:#fff;-webkit-text-stroke-color:#7a3f05}
@@ -158,7 +158,10 @@ svg{width:100%;height:100%;display:block}
 .seg button[data-d=medium]{--dbg:linear-gradient(#6ab8ff,#2a6ad0);--dsh:#1a4a9a;--dso:#143a7a}
 .seg button[data-d=hard]{--dbg:linear-gradient(#ff8a4a,#d0381a);--dsh:#9a2208;--dso:#6a1a06}
 .seg button[data-d=extreme]{--dbg:linear-gradient(#b67af0,#6a2aa8);--dsh:#4a1a7a;--dso:#2a0c4a}
-.seg.locked button:not(.active){opacity:.45}
+.seg.locked{pointer-events:none}
+.seg.locked button{filter:grayscale(.55);opacity:.4}
+.seg.locked button.active{filter:none;opacity:1;box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
+.seg.locked button:not(.active){opacity:.35}
 .seg.small{height:34px;max-width:260px}
 .seg.small button{color:#e9a8b2}
 .bet-row{display:flex;gap:7px;margin-top:9px;height:48px}
@@ -246,7 +249,7 @@ svg{width:100%;height:100%;display:block}
 }
 
 /* ---------- small phones ---------- */
-@media (max-height:700px){ .history-wrap{display:none} .main-btns{height:64px} .plaque{height:58px} .mult{font-size:34px} .medal{flex-basis:46px;height:46px} }
+@media (max-height:700px){ .history-wrap{min-height:28px;padding:3px 8px} .history-title{display:none} .main-btns{height:64px} .plaque{height:58px} .mult{font-size:34px} .medal{flex-basis:46px;height:46px} }
 @media (max-width:360px){ .logo{width:78px}.logo-word{font-size:18px} #balance{font-size:16px} .ib{width:30px;height:30px;padding:6px} .seg button svg{display:none} }
 
 /* ---------- desktop: stage left, control column right ---------- */
@@ -279,7 +282,12 @@ svg{width:100%;height:100%;display:block}
 .splash-bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:linear-gradient(#fff07a,#f3a312);transition:width .2s linear}
 .splash p{position:relative;font:13px 'Rubik',sans-serif;color:#ffd9a8;opacity:.85;margin:0}
 @keyframes splashIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
-@keyframes splashBar{from{left:0}to{left:60%}}
+.desk-help{display:none}
+.coach{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;width:min(420px,calc(100% - 24px));pointer-events:none}
+.coach.hidden{display:none}
+.coach-card{pointer-events:auto;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:linear-gradient(#fbf1dc,#ead6ae);color:#5a1a10;border:3px solid var(--goldline);box-shadow:0 6px 0 #7a4a10}
+.coach-card p{margin:0;flex:1;font:14px/1.35 'Rubik',sans-serif}
+.coach-card button{flex:0 0 auto;height:36px;padding:0 12px;border-radius:10px;font:16px 'Lilita One',sans-serif;color:#fff;background:linear-gradient(#9bea55,#3c9a16);box-shadow:inset 0 -3px 0 #2a7a0e}
 
 /* narrow phones: the painted logo is 116px and was covering the refill button on 360px */
 @media (max-width: 400px) {
@@ -326,6 +334,8 @@ svg{width:100%;height:100%;display:block}
 .has-ui-icon-btn .ib.off{background:var(--img-ui-icon-btn) center/contain no-repeat;box-shadow:none;filter:grayscale(.9) brightness(.7) drop-shadow(0 2px 2px rgba(0,0,0,.5))}
 /* chunkier 3D numbers */
 .mult{color:#fffaf0;text-shadow:0 2px 0 #e08a1a,0 4px 0 #a8500c,0 6px 0 #5a1a06,0 9px 10px rgba(0,0,0,.55)}
+.hud-next{font:12px/1 'Lilita One',sans-serif;letter-spacing:.4px;color:#ffe9a8;margin-top:1px;-webkit-text-stroke:2.5px #5a1a10;paint-order:stroke fill}
+.hud-next[hidden]{display:none}
 .btn span{text-shadow:0 3px 0 var(--o),0 6px 7px rgba(0,0,0,.35)}
 .balance #balance{text-shadow:0 2px 0 #5a1a06,0 4px 5px rgba(0,0,0,.4)}
 .has-logo .logo{width:106px}
@@ -440,6 +450,14 @@ html.desk #frameDeco:before,html.desk #frameDeco:after{content:'';position:absol
 html.desk #frameDeco:before{top:-26px}html.desk #frameDeco:after{bottom:-26px}
 html.desk #frameDeco i{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffb0a0,#d0203a 45%,#6a0814 80%);box-shadow:0 0 0 3px #ffd96a,0 0 0 5px #7a4a10,0 0 14px rgba(255,80,60,.8)}
 html.desk #frameDeco i:nth-child(1){left:-19px;top:-19px}html.desk #frameDeco i:nth-child(2){right:-19px;top:-19px}html.desk #frameDeco i:nth-child(3){left:-19px;bottom:-19px}html.desk #frameDeco i:nth-child(4){right:-19px;bottom:-19px}
+html.desk .ladder-wrap{order:1;flex:0 1 auto;max-height:46%}
+html.desk .desk-help{order:2;display:block;flex:0 0 auto;margin:8px 12px 0;padding:8px 10px;border-radius:12px;background:rgba(40,8,14,.35);border:1.5px solid rgba(246,196,69,.45);color:#ffe9a8;font:13px/1.35 'Rubik',sans-serif}
+html.desk .desk-help b{display:block;font:14px 'Lilita One',sans-serif;letter-spacing:.4px;margin-bottom:2px}
+html.desk .desk-help p{margin:2px 0}
+html.desk .history-wrap{order:3;flex:1 1 auto;min-height:0;flex-direction:column;align-items:stretch;overflow:auto}
+html.desk .history{flex-direction:column;overflow:auto}
+html.desk .controls{order:4}
+html.desk .footer{order:5}
 html.desk .ladder .rung{width:66px;height:46px}
 html.desk .ladder .rung .m{font-size:16px}
 html.desk #app{grid-template-columns:minmax(0,1fr) 380px}
