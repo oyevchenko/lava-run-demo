@@ -472,8 +472,9 @@ html.stake #autoRow{display:none !important}
 html.stake #slabRow{display:flex !important}
 html.stake #cashBtn{display:none !important}
 html.stake #possibleWin{display:flex !important}
-html.desk .ladder-wrap{min-height:220px;background:linear-gradient(#4a3040,#2a1822)}
-html.desk .ladder{display:flex;flex-wrap:wrap;height:auto;min-height:180px}
+html.desk .ladder-wrap{order:1;flex:1 1 auto;min-height:180px;overflow:auto;background:linear-gradient(#4a3040,#2a1822)}
+html.desk .ladder{display:flex;flex-wrap:wrap;align-content:flex-start;height:auto;min-height:160px;padding:10px;gap:8px}
+html.desk .ladder .rung{display:flex;flex-direction:column;align-items:center;justify-content:center;width:66px;height:46px;background:linear-gradient(#f4e2c4,#e7c99a);color:#6a2a1a}
 .slab-row{display:flex;align-items:center;gap:6px;margin-top:8px}
 .slab-row[hidden]{display:none}
 .slab-row .bet-box{flex:1;height:48px}

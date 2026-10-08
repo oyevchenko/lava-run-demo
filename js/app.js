@@ -316,6 +316,7 @@
       seg.classList.toggle('locked', inRound || st.busy);
       var active = inRound;
       var broke = !active && st.bet * 100 > st.balance;
+      var active = !!st.round;
       $('goLabel').textContent = active ? t('step') : t('go');
       if (active) { var nk = st.round.k + 1; $('goSub').textContent = nk <= st.round.steps ? t('next') + ': ' + fmtMult(model.multCents(st.rtp, st.diff, nk, st.round.j)) : ''; }
       else if (cfg.stake && !st.autoStep) $('goSub').textContent = t('pick');
@@ -358,6 +359,12 @@
       $('slabCap').textContent = t('slab');
       $('slabVal').textContent = String(st.autoStep);
       $('slabMult').textContent = fmtMult(model.multCents(st.rtp, st.diff, st.autoStep, 0));
+      if ($('possibleAmt')) {
+        var pm = model.multCents(st.rtp, st.diff, st.autoStep, 0);
+        $('possibleTitle').textContent = t('possible');
+        $('possibleAmt').textContent = fmt(st.bet * pm);
+        $('possibleSub').textContent = t('ifHolds', { n: st.autoStep });
+      }
       $('slabMinus').disabled = !!st.round || st.busy || st.autoStep <= 1;
       $('slabPlus').disabled = !!st.round || st.busy || st.autoStep >= n;
     }
@@ -404,7 +411,13 @@
                      : '<span class="h l" data-i="' + i + '">LAVA<span class="d">' + tail + '</span></span>';
       }).join('') || '<span class="h">' + t('none') + '</span>';
     }
-    function renderAll(lostAt) { renderControls(); renderLadder(lostAt); renderHud(); renderHistory(); renderInfo(); }
+    function renderAll(lostAt) {
+      try { renderControls(); } catch (e) { console.error(e); }
+      try { renderLadder(lostAt); } catch (e) { console.error(e); }
+      try { renderHud(); } catch (e) { console.error(e); }
+      try { renderHistory(); } catch (e) { console.error(e); }
+      try { renderInfo(); } catch (e) { console.error(e); }
+    }
 
     // ---------- banners / overlays ----------
     var bannerTimer = null;
