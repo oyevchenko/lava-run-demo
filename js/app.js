@@ -698,6 +698,7 @@
     renderAll();
     (function coach() {
       var el = $('coach'), text = $('coachText'), btn = $('coachNext');
+      if (el && document.documentElement.classList.contains('desk')) $('app').appendChild(el);
       if (!el || qa || store.getItem('lavaRun.seenCoach')) return;
       var tips = [t('tip1'), t('tip2'), t('tip3')];
       var i = 0;

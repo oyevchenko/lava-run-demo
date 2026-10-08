@@ -494,6 +494,8 @@ html.desk .history-wrap{order:3;flex:0 0 auto;max-height:150px;min-height:0;flex
 html.desk .history{flex-direction:column;overflow:auto}
 html.desk .controls{order:4}
 html.desk .footer{order:5}
+html.desk .coach{position:absolute;left:18px;bottom:18px;width:460px;transform:none;z-index:8}
+html.desk .coach-card p{font:15px/1.3 'Lilita One',sans-serif;color:#6a2a1a}
 html.desk .ladder .rung{width:66px;height:46px}
 html.desk .ladder .rung .m{font-size:16px}
 html.desk #app{grid-template-columns:minmax(0,1fr) 380px}
