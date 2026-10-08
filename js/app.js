@@ -319,7 +319,7 @@
       else if (cfg.stake && !st.autoStep) $('goSub').textContent = t('pick');
       else if (broke) $('goSub').textContent = Math.floor(st.balance / 100) < MIN_BET ? t('broke') : t('brokeLower');
       else $('goSub').textContent = t('bet') + ' ' + st.bet + ' · ' + t('next') + ' ' + fmtMult(model.multCents(st.rtp, st.diff, 1, 0));
-      $('goBtn').disabled = broke;
+      $('goBtn').disabled = st.busy || broke;
       $('goBtn').title = broke ? t('brokeTitle') : '';
       var canCash = !cfg.stake && active && st.round.k >= 1 && !st.busy;
       if ($('cashBtn')) {
@@ -562,8 +562,7 @@
 
     var stakeRun = false;
     function onGo() {
-      if (st.busy && !st.round) st.busy = false;
-      if (st.busy) { st.busy = false; stakeRun = false; }
+      if (st.busy) return;
       if (st.round) return doStep();
       if (cfg.stake && !st.autoStep) { banner('info', t('pick'), t('stake')); return; }
       if (cfg.stake && st.autoStep > model.steps(st.diff)) st.autoStep = model.steps(st.diff);
@@ -573,7 +572,6 @@
         st.balance -= st.bet * 100; shown = st.balance; st.round = res.round; st.last = null;
         track('round_start', { id: res.round.id, bet: st.bet, diff: st.diff, rtp: st.rtp });
         resetScene(); save(); renderAll();
-        st.busy = false;
         stakeRun = !!cfg.stake;
         return doStep();
       }).catch(function (e) { st.busy = false; banner('info', t('fault'), t('faultSub')); console.error(e); renderControls(); });

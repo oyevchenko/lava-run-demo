@@ -331,7 +331,7 @@ html.stake .main-btns .btn-go{flex:1}
 .has-ui-panel-crimson .plaque{background:none;border:0;box-shadow:none;border-image:var(--img-ui-panel-crimson) 64 fill / 20px round;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5)) drop-shadow(0 0 14px rgba(255,190,60,.25))}
 .has-ui-panel-crimson .plaque:before{display:none}
 .has-ui-plaque .plaque{border-image:var(--img-ui-plaque) 60 fill / 22px stretch}
-.has-ui-panel-crimson .controls{background:none;border-top:0;border-image:var(--img-ui-panel-crimson) 64 fill / 22px 16px 18px round;box-shadow:0 -6px 14px rgba(0,0,0,.45)}
+.has-ui-panel-crimson .controls{background:linear-gradient(#a3203a,#6e1222);border-image:none;box-shadow:none}
 .has-ui-panel-crimson .controls:before{display:none}
 .has-ui-medallion .medal{filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
 /* glossy bevelled buttons: painted art, text drawn on top */
@@ -364,7 +364,7 @@ html.stake .main-btns .btn-go{flex:1}
 /* frame edges tile (round) without the fill slice, the velvet centre is a gradient: no seams at any width */
 .has-ui-panel-crimson .plaque{border-image:var(--img-ui-panel-crimson) 64 / 20px round;border-radius:16px;
   background:radial-gradient(ellipse at 50% 35%,#d02a44 0%,#a0162c 55%,#740c1c 100%)}
-.has-ui-panel-crimson .controls{border-image:var(--img-ui-panel-crimson) 64 / 22px 16px 18px round;border-radius:18px 18px 0 0;
+.has-ui-panel-crimson .controls{border-image:none;background:linear-gradient(#a3203a,#6e1222)}
   background:radial-gradient(ellipse at 50% 0%,#b8203a 0%,#8e1428 60%,#6a0c1c 100%)}
 .has-ui-plaque .plaque{border-image:var(--img-ui-plaque) 60 fill / 22px stretch;background:none}
 
