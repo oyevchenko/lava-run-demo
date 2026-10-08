@@ -319,7 +319,7 @@
       else if (cfg.stake && !st.autoStep) $('goSub').textContent = t('pick');
       else if (broke) $('goSub').textContent = Math.floor(st.balance / 100) < MIN_BET ? t('broke') : t('brokeLower');
       else $('goSub').textContent = t('bet') + ' ' + st.bet + ' · ' + t('next') + ' ' + fmtMult(model.multCents(st.rtp, st.diff, 1, 0));
-      $('goBtn').disabled = st.busy || broke;
+      $('goBtn').disabled = !!st.busy;
       $('goBtn').title = broke ? t('brokeTitle') : '';
       var canCash = !cfg.stake && active && st.round.k >= 1 && !st.busy;
       if ($('cashBtn')) {
