@@ -111,7 +111,7 @@
     function applyUiCss() {
       var de = document.documentElement;
       ['ui_panel_crimson', 'ui_plaque', 'ui_btn_green', 'ui_btn_gold', 'ui_medallion', 'ui_icon_btn', 'ui_meander_strip', 'logo', 'coin'].forEach(function (n) {
-        if (imgs[n]) { de.style.setProperty('--img-' + n.replace(/_/g, '-'), 'url("' + new URL(bust(base + M.images[n].src), location.href).href + '")'); de.classList.add('has-' + n.replace(/_/g, '-')); }
+        if (imgs[n] && n !== 'ui_btn_green') { de.style.setProperty('--img-' + n.replace(/_/g, '-'), 'url("' + new URL(bust(base + M.images[n].src), location.href).href + '")'); de.classList.add('has-' + n.replace(/_/g, '-')); }
       });
     }
     // ---------- per-circle slab variants (derived from slab_marble / slab_cracked with composite ops only, so they

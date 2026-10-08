@@ -661,6 +661,9 @@
       b.addEventListener('click', function () { var u = new URL(location.href); u.searchParams.set('lang', b.dataset.lang); location.href = u.href; });
     });
     if ($('modeNote')) $('modeNote').textContent = (cfg.stake ? t('stake') : (cfg.mode === 'real' ? t('real') : t('demo'))) + ' · ' + (window.LAVA_BUILD || '');
+    document.documentElement.classList.remove('has-ui-btn-green');
+    var goPaint = $('goBtn');
+    if (goPaint) { goPaint.style.background = 'linear-gradient(#8fe05a,#3c9a16)'; goPaint.style.borderImage = 'none'; goPaint.style.boxShadow = 'inset 0 -5px 0 #2a7a0e, 0 3px 0 #3a0810'; }
     document.documentElement.classList.toggle('stake', !!cfg.stake);
     var help = $('deskHelp');
     if (help && $('deskBody')) {
