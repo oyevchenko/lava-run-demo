@@ -169,9 +169,10 @@
     var seg = $('diffSeg');
     model.difficultyIds.forEach(function (id) {
       var b = document.createElement('button'); b.dataset.d = id; b.setAttribute('role', 'tab');
-      b.innerHTML = '<svg><use href="#i-' + (ICON[id] || 'flame') + '"/></svg><span>' + model.difficulties[id].label + '</span>';
+      b.innerHTML = '<svg><use href="#i-' + (ICON[id] || 'flame') + '"/></svg><span>' + model.difficulties[id].label + '<small>' + model.difficulties[id].steps + '</small></span>';
       b.addEventListener('click', function () {
-        if (st.round) { banner('info', t('locked'), t('lockedSub')); return; }
+        if (st.round && st.round.status === 'active' && st.round.k > 0) { banner('info', t('locked'), t('lockedSub')); return; }
+        st.round = st.round && st.round.k > 0 ? st.round : null;
         st.busy = false;
         audio.click(); st.diff = id; st.last = null;
         var n = model.steps(id), prev = st.autoStep || 0;
