@@ -662,7 +662,7 @@
       b.classList.toggle('active', b.dataset.lang === cfg.lang);
       b.addEventListener('click', function () { var u = new URL(location.href); u.searchParams.set('lang', b.dataset.lang); location.href = u.href; });
     });
-    if ($('modeNote')) $('modeNote').textContent = cfg.stake ? t('stake') : (cfg.mode === 'real' ? t('real') : t('demo'));
+    if ($('modeNote')) $('modeNote').textContent = (cfg.stake ? t('stake') : (cfg.mode === 'real' ? t('real') : t('demo'))) + ' · ' + (window.LAVA_BUILD || '');
     document.documentElement.classList.toggle('stake', !!cfg.stake);
     var help = $('deskHelp');
     if (help && $('deskBody')) {
